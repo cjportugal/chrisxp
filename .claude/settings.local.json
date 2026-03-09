@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_figma_figma__get_design_context",
+      "Bash(npm install:*)",
+      "Bash(ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node:*)",
+      "Bash(/tmp/search3.js:*)",
+      "Bash(/tmp/search5.js:*)",
+      "Bash(/tmp/search6.js:*)",
+      "Bash(/tmp/search8.js:*)",
+      "Bash(/tmp/search10.js:*)",
+      "Bash(/tmp/search11.js:*)",
+      "Bash(/tmp/search12.js:*)",
+      "Bash(/tmp/search16.js:*)",
+      "Bash(/tmp/search17.js:*)",
+      "Bash(npm run:*)",
+      "Bash(grep:*)"
+    ]
+  }
+}
