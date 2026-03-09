@@ -197,7 +197,6 @@ export default function Winamp() {
     });
 
     webampRef.current = webamp;
-    ensureMilkdropWindowMode(webamp);
 
     const restoreBackground = () => {
       if (!originalBackgroundRef.current) {
@@ -249,24 +248,16 @@ export default function Winamp() {
           return;
         }
 
-        const guardUntil = Date.now() + 1500;
         stopStateWatcher = webamp.__onStateChange(() => {
           if (cancelled) {
             return;
           }
 
-          if (Date.now() <= guardUntil) {
-            ensureMilkdropWindowMode(webamp);
-          }
-
           syncMilkdropDesktopClass(webamp);
         });
 
-        ensureMilkdropWindowMode(webamp);
+        webamp.store.dispatch({ type: 'SET_MILKDROP_DESKTOP', enabled: true });
         syncMilkdropDesktopClass(webamp);
-        setTimeout(() => ensureMilkdropWindowMode(webamp), 0);
-        setTimeout(() => ensureMilkdropWindowMode(webamp), 250);
-        setTimeout(() => ensureMilkdropWindowMode(webamp), 1000);
       })
       .catch((error) => {
         if (cancelled) {
