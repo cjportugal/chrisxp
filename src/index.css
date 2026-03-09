@@ -116,39 +116,41 @@ body.webamp-milkdrop-desktop .webamp-desktop {
   scrollbar-width: none;
 }
 
-/* Reset all xp.css range input overrides inside Webamp so Webamp's own styles apply correctly. */
+/* Reset xp.css range input overrides inside Webamp.
+   Only use !important on transform/box-shadow so Webamp's own more-specific
+   rules (#webamp #volume input::...) can still override size and background. */
 #webamp input[type=range] {
-  width: revert !important;
-  height: revert !important;
-  margin: revert !important;
+  width: auto;
+  height: auto;
+  margin: 0;
   transform: none !important;
-  background: transparent !important;
+  background: transparent;
 }
 #webamp input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: revert !important;
+  -webkit-appearance: none;
   transform: none !important;
-  background: revert !important;
-  height: revert !important;
-  width: revert !important;
+  background: none;
+  height: auto;
+  width: auto;
 }
 #webamp input[type=range]::-webkit-slider-runnable-track {
-  background: revert !important;
+  background: none;
   box-shadow: none !important;
-  height: revert !important;
-  border: revert !important;
-  border-radius: revert !important;
+  height: auto;
+  border: none;
+  border-radius: 0;
 }
 #webamp input[type=range]::-moz-range-thumb {
   transform: none !important;
-  background: revert !important;
-  height: revert !important;
-  width: revert !important;
+  background: none;
+  height: auto;
+  width: auto;
 }
 #webamp input[type=range]::-moz-range-track {
-  background: revert !important;
+  background: none;
   box-shadow: none !important;
-  height: revert !important;
-  border: revert !important;
+  height: auto;
+  border: none;
 }
 
 /* Milkdrop desktop custom context menu */
