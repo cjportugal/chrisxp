@@ -58,7 +58,7 @@ export default function Desktop() {
 
   for (const item of DESKTOP_ICON_ORDER) {
     if (item === 'recycle-bin') {
-      desktopIconItems.push({ key: item, label: 'Recycle Bin', img: '/icon-recycle-bin.png' });
+      desktopIconItems.push({ key: item, label: 'Recycle Bin', img: `${import.meta.env.BASE_URL}icon-recycle-bin.png` });
       continue;
     }
 
@@ -66,7 +66,7 @@ export default function Desktop() {
       desktopIconItems.push({
         key: item,
         label: 'Change Background',
-        img: '/icon-change-bg.png',
+        img: `${import.meta.env.BASE_URL}icon-change-bg.png`,
         onClick: handleChangeBackground,
       });
       continue;
