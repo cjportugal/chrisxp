@@ -116,19 +116,39 @@ body.webamp-milkdrop-desktop .webamp-desktop {
   scrollbar-width: none;
 }
 
-/* Prevent xp.css from applying its slider thumb transform to Webamp's range inputs,
-   which causes the thumb to overflow outside the window bounds. */
-#webamp input[type=range]::-webkit-slider-thumb {
-  transform: none;
+/* Reset all xp.css range input overrides inside Webamp so Webamp's own styles apply correctly. */
+#webamp input[type=range] {
+  width: revert !important;
+  height: revert !important;
+  margin: revert !important;
+  transform: none !important;
+  background: transparent !important;
 }
-#webamp input[type=range]::-moz-range-thumb {
-  transform: none;
+#webamp input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: revert !important;
+  transform: none !important;
+  background: revert !important;
+  height: revert !important;
+  width: revert !important;
 }
 #webamp input[type=range]::-webkit-slider-runnable-track {
-  box-shadow: none;
+  background: revert !important;
+  box-shadow: none !important;
+  height: revert !important;
+  border: revert !important;
+  border-radius: revert !important;
+}
+#webamp input[type=range]::-moz-range-thumb {
+  transform: none !important;
+  background: revert !important;
+  height: revert !important;
+  width: revert !important;
 }
 #webamp input[type=range]::-moz-range-track {
-  box-shadow: none;
+  background: revert !important;
+  box-shadow: none !important;
+  height: revert !important;
+  border: revert !important;
 }
 
 /* Milkdrop desktop custom context menu */
