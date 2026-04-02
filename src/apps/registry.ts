@@ -3,6 +3,8 @@ import Terminal from './Terminal';
 import Winamp from './Winamp';
 import Diablo from './Diablo';
 
+const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
+
 export type AppType = 'terminal' | 'winamp' | 'diablo';
 
 export interface AppDefinition {
