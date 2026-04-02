@@ -139,7 +139,7 @@ export default function StartMenu({ onClose }: Props) {
               boxSizing: 'border-box',
             }}
           >
-            <img src={`${assetBase}windows-logo.png`} alt="" style={{ width: 32, height: 32 }} />
+            <img src={`${import.meta.env.BASE_URL}windows-logo.png`} alt="" style={{ width: 32, height: 32 }} />
             <span className="start-menu-label" style={{ fontSize: 13, color: '#000000', flex: 1 }}>
               Shut Down...
             </span>

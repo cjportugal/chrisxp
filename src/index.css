@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: 'Perfect DOS VGA 437 Win';
-  src: url('/bios/PerfectDOSVGA437Win.woff') format('woff');
+  src: url('./assets/fonts/PerfectDOSVGA437Win.woff') format('woff');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
@@ -37,7 +37,7 @@ body {
   position: fixed;
   inset: 0;
   overflow: hidden;
-  background: #000;
+  background: #000000;
 }
 
 .bios-screen::after {
@@ -46,14 +46,14 @@ body {
   inset: 0;
   pointer-events: none;
   opacity: 0.04;
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
 }
 
 .bios-screen__scanlines {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  opacity: 0.08;
+  opacity: 0.12;
   background-image: linear-gradient(
     to bottom,
     rgba(255, 255, 255, 0.12) 0,
@@ -67,11 +67,6 @@ body {
   position: relative;
   width: 100%;
   height: 100%;
-}
-
-.bios-screen__content--boot {
-  min-width: 1024px;
-  min-height: 595px;
 }
 
 .bios-screen__cursor {
@@ -89,13 +84,6 @@ body {
   50%,
   100% {
     opacity: 0;
-  }
-}
-
-@media (max-width: 1100px), (max-height: 650px) {
-  .bios-screen__content--boot {
-    min-width: 0;
-    min-height: 0;
   }
 }
 
@@ -196,19 +184,41 @@ body.webamp-milkdrop-desktop .webamp-desktop {
   scrollbar-width: none;
 }
 
-/* Prevent xp.css from applying its slider thumb transform to Webamp's range inputs,
-   which causes the thumb to overflow outside the window bounds. */
-#webamp input[type=range]::-webkit-slider-thumb {
-  transform: none;
+/* Reset xp.css range input overrides inside Webamp.
+   Only use !important on transform/box-shadow so Webamp's own more-specific
+   rules (#webamp #volume input::...) can still override size and background. */
+#webamp input[type=range] {
+  width: auto;
+  height: auto;
+  margin: 0;
+  transform: none !important;
+  background: transparent;
 }
-#webamp input[type=range]::-moz-range-thumb {
-  transform: none;
+#webamp input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  transform: none !important;
+  background: none;
+  height: auto;
+  width: auto;
 }
 #webamp input[type=range]::-webkit-slider-runnable-track {
-  box-shadow: none;
+  background: none;
+  box-shadow: none !important;
+  height: auto;
+  border: none;
+  border-radius: 0;
+}
+#webamp input[type=range]::-moz-range-thumb {
+  transform: none !important;
+  background: none;
+  height: auto;
+  width: auto;
 }
 #webamp input[type=range]::-moz-range-track {
-  box-shadow: none;
+  background: none;
+  box-shadow: none !important;
+  height: auto;
+  border: none;
 }
 
 /* Milkdrop desktop custom context menu */

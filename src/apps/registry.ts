@@ -33,11 +33,11 @@ export const appDefinitions: Record<AppType, AppDefinition> = {
     Component: Terminal,
     desktopIcon: {
       label: 'My Computer',
-      img: asset('icon-my-computer.png'),
+      img: `${import.meta.env.BASE_URL}icon-my-computer.png`,
     },
     startMenuItem: {
       label: 'Command Prompt',
-      icon: asset('icon-my-computer.png'),
+      icon: `${import.meta.env.BASE_URL}icon-my-computer.png`,
       showArrow: true,
     },
   },
@@ -49,11 +49,11 @@ export const appDefinitions: Record<AppType, AppDefinition> = {
     Component: Winamp,
     desktopIcon: {
       label: 'Winamp',
-      img: asset('icon-winamp.png'),
+      img: `${import.meta.env.BASE_URL}icon-winamp.png`,
     },
     startMenuItem: {
       label: 'Winamp',
-      icon: asset('icon-winamp.png'),
+      icon: `${import.meta.env.BASE_URL}icon-winamp.png`,
       showArrow: true,
     },
   },
@@ -65,11 +65,11 @@ export const appDefinitions: Record<AppType, AppDefinition> = {
     Component: Diablo,
     desktopIcon: {
       label: 'Diablo',
-      img: asset('icon-diablo.png'),
+      img: `${import.meta.env.BASE_URL}icon-diablo.png`,
     },
     startMenuItem: {
       label: 'Diablo',
-      icon: asset('icon-diablo.png'),
+      icon: `${import.meta.env.BASE_URL}icon-diablo.png`,
       showArrow: true,
     },
   },

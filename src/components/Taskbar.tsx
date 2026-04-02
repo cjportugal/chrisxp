@@ -78,7 +78,7 @@ export default function Taskbar() {
               gap: 4,
               padding: '0 2px',
             }}>
-              <img src={`${assetBase}windows-logo.png`} alt="" style={{ width: 16, height: 16 }} />
+              <img src={`${import.meta.env.BASE_URL}windows-logo.png`} alt="" style={{ width: 16, height: 16 }} />
               <span style={{ fontSize: 11, fontFamily: "'MS Sans Serif Bold', 'MS Sans Serif', Tahoma, sans-serif", fontWeight: 'bold', color: '#000', whiteSpace: 'nowrap' }}>Start</span>
             </div>
           </div>
@@ -108,7 +108,7 @@ export default function Taskbar() {
               userSelect: 'none',
             }}
           >
-            <img src={`${assetBase}windows-logo.png`} alt="" style={{ width: 16, height: 16 }} />
+            <img src={`${import.meta.env.BASE_URL}windows-logo.png`} alt="" style={{ width: 16, height: 16 }} />
             Start
           </div>
         )}
@@ -144,7 +144,7 @@ export default function Taskbar() {
         {/* Tray area */}
         <div style={{ display: 'flex', gap: 3, alignItems: 'center', flexShrink: 0 }}>
           {/* Divider */}
-          <img src={`${assetBase}tray-divider.png`} alt="" style={{ width: 2, height: 23 }} />
+          <img src={`${import.meta.env.BASE_URL}tray-divider.png`} alt="" style={{ width: 2, height: 23 }} />
           {/* Clock + speaker */}
           <div
             style={{
@@ -159,7 +159,7 @@ export default function Taskbar() {
               flexShrink: 0,
             }}
           >
-            <img src={`${assetBase}speaker.png`} alt="" style={{ width: 16, height: 16 }} />
+            <img src={`${import.meta.env.BASE_URL}speaker.png`} alt="" style={{ width: 16, height: 16 }} />
             <span style={{ fontSize: 11, fontFamily: "'MS Sans Serif', Tahoma, sans-serif", whiteSpace: 'nowrap' }}>
               {formatTime(time)}
             </span>
