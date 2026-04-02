@@ -1,5 +1,13 @@
 @import 'xp.css';
 
+@font-face {
+  font-family: 'Perfect DOS VGA 437 Win';
+  src: url('./assets/fonts/PerfectDOSVGA437Win.woff') format('woff');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -23,6 +31,66 @@ body {
 #root {
   position: relative;
   z-index: 1;
+}
+
+.bios-screen {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #000000;
+}
+
+.bios-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+}
+
+.bios-screen__scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.12) 0,
+    rgba(255, 255, 255, 0.12) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+}
+
+.bios-screen__content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.bios-screen__cursor {
+  display: inline-block;
+  margin-left: 4px;
+  animation: bios-cursor 1s steps(1) infinite;
+}
+
+@keyframes bios-cursor {
+  0%,
+  49% {
+    opacity: 1;
+  }
+
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bios-screen__cursor {
+    animation: none;
+  }
 }
 
 #webamp-mount-host,
