@@ -33,6 +33,7 @@ const START_MENU_ITEMS: StartMenuEntry[] = appIds.flatMap((appId) => {
 export default function StartMenu({ onClose }: Props) {
   const { openWindow } = useWindowStore();
   const menuRef = useRef<HTMLDivElement>(null);
+  const assetBase = import.meta.env.BASE_URL;
 
   useEffect(() => {
     const handleMouseDown = (event: MouseEvent) => {
@@ -138,7 +139,7 @@ export default function StartMenu({ onClose }: Props) {
               boxSizing: 'border-box',
             }}
           >
-            <img src="/windows-logo.png" alt="" style={{ width: 32, height: 32 }} />
+            <img src={`${assetBase}windows-logo.png`} alt="" style={{ width: 32, height: 32 }} />
             <span className="start-menu-label" style={{ fontSize: 13, color: '#000000', flex: 1 }}>
               Shut Down...
             </span>

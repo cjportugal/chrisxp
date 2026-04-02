@@ -3,6 +3,8 @@ import Terminal from './Terminal';
 import Winamp from './Winamp';
 import Diablo from './Diablo';
 
+const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
+
 export type AppType = 'terminal' | 'winamp' | 'diablo';
 
 export interface AppDefinition {
@@ -31,11 +33,11 @@ export const appDefinitions: Record<AppType, AppDefinition> = {
     Component: Terminal,
     desktopIcon: {
       label: 'My Computer',
-      img: '/icon-my-computer.png',
+      img: asset('icon-my-computer.png'),
     },
     startMenuItem: {
       label: 'Command Prompt',
-      icon: '/icon-my-computer.png',
+      icon: asset('icon-my-computer.png'),
       showArrow: true,
     },
   },
@@ -47,11 +49,11 @@ export const appDefinitions: Record<AppType, AppDefinition> = {
     Component: Winamp,
     desktopIcon: {
       label: 'Winamp',
-      img: '/icon-winamp.png',
+      img: asset('icon-winamp.png'),
     },
     startMenuItem: {
       label: 'Winamp',
-      icon: '/icon-winamp.png',
+      icon: asset('icon-winamp.png'),
       showArrow: true,
     },
   },
@@ -63,11 +65,11 @@ export const appDefinitions: Record<AppType, AppDefinition> = {
     Component: Diablo,
     desktopIcon: {
       label: 'Diablo',
-      img: '/icon-diablo.png',
+      img: asset('icon-diablo.png'),
     },
     startMenuItem: {
       label: 'Diablo',
-      icon: '/icon-diablo.png',
+      icon: asset('icon-diablo.png'),
       showArrow: true,
     },
   },
