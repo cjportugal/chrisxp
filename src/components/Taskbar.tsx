@@ -7,7 +7,6 @@ export default function Taskbar() {
   const [showStart, setShowStart] = useState(false);
   const [startFocused, setStartFocused] = useState(false);
   const [time, setTime] = useState(new Date());
-  const assetBase = import.meta.env.BASE_URL;
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);

@@ -31,8 +31,6 @@ interface BootSequenceProps {
   onComplete: () => void;
 }
 
-const BIOS_DESIGN_WIDTH = 1414;
-const BIOS_DESIGN_HEIGHT = 785;
 const TOTAL_DURATION_MS = 4800;
 const REDUCED_MOTION_HOLD_MS = 600;
 const SKIP_SHOW_MS = 120;
@@ -46,20 +44,20 @@ const HEADER_LINES: BootLine[] = [
 const SYSTEM_ROWS: BootRow[] = [
   { kind: 'line', key: 'version', start: 760, text: 'Version CHRISXP-0410' },
   { kind: 'line', key: 'cpu', start: 980, text: 'PENTIUM III CPU at 733MHz' },
-  { kind: 'line', key: 'bus', start: 1160, text: 'PCI BUS at 33MHz' },
+  { kind: 'line', key: 'bus', start: 980, text: 'PCI BUS at 33MHz' },
   {
     kind: 'counter',
     key: 'memory',
     start: 1600,
     end: 2700,
-    label: 'Memory Test :',
+    label: 'Memory Test',
     values: [0, 1024, 4096, 8192, 16384, 24576, 32768, 49152, 57344, 64000, 65536],
   },
   {
     kind: 'line',
     key: 'pnp',
     start: 2750,
-    text: 'Award Plug and Play BIOS Extension   v1.0A',
+    text: 'Award Plug and Play BIOS Extension  v1.0A',
   },
   {
     kind: 'line',
@@ -106,6 +104,38 @@ const FOOTER_LINES = [
   { key: 'boot', start: 4380 },
 ] as const;
 
+const textStyle = {
+  color: '#808080',
+  fontFamily: '"Perfect DOS VGA 437 Win", "Lucida Console", "Courier New", monospace',
+  fontSize: 24,
+  lineHeight: '30px',
+  letterSpacing: 0,
+  whiteSpace: 'pre' as const,
+  fontVariantLigatures: 'none' as const,
+};
+
+const memoryLabelStyle = {
+  ...textStyle,
+  width: 170,
+};
+
+const memoryColonStyle = {
+  ...textStyle,
+  width: 79,
+};
+
+const checkLabelStyle = {
+  ...textStyle,
+  flex: 1,
+  minWidth: 0,
+};
+
+const checkStatusStyle = {
+  ...textStyle,
+  width: 140,
+  textAlign: 'left' as const,
+};
+
 const formatMemoryValue = (elapsed: number, item: BootCounter) => {
   if (elapsed >= item.end) {
     return `${item.values[item.values.length - 1]}K OK`;
@@ -129,19 +159,12 @@ const formatCheckSuffix = (elapsed: number, item: BootCheckRow) => {
   return '.'.repeat(Math.max(1, phase));
 };
 
-const getViewportScale = () => {
-  const widthScale = window.innerWidth / BIOS_DESIGN_WIDTH;
-  const heightScale = window.innerHeight / BIOS_DESIGN_HEIGHT;
-  return Math.max(0.72, Math.min(1.38, widthScale, heightScale));
-};
-
 export default function BootSequence({ onComplete }: BootSequenceProps) {
   const [elapsed, setElapsed] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(() =>
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
   const [paused, setPaused] = useState(false);
-  const [scale, setScale] = useState(1);
   const completedRef = useRef(false);
   const skipQueuedRef = useRef(false);
   const completionTimeoutRef = useRef<number | null>(null);
@@ -172,15 +195,6 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
     mediaQuery.addEventListener('change', applyPreference);
 
     return () => mediaQuery.removeEventListener('change', applyPreference);
-  }, []);
-
-  useEffect(() => {
-    const updateScale = () => setScale(getViewportScale());
-
-    updateScale();
-    window.addEventListener('resize', updateScale);
-
-    return () => window.removeEventListener('resize', updateScale);
   }, []);
 
   useEffect(() => {
@@ -269,150 +283,158 @@ export default function BootSequence({ onComplete }: BootSequenceProps) {
   }, [reducedMotion]);
 
   const renderElapsed = reducedMotion ? TOTAL_DURATION_MS : elapsed;
+  const showHeader = renderElapsed >= HEADER_LINES[0].start;
+  const showVersion = renderElapsed >= 760;
+  const showCpuBlock = renderElapsed >= 980;
+  const memoryRow = SYSTEM_ROWS.find((row) => row.key === 'memory') as BootCounter;
+  const pnpRows = SYSTEM_ROWS.filter(
+    (row): row is BootLine => row.kind === 'line' && (row.key === 'pnp' || row.key === 'award')
+  );
+  const checkRows = SYSTEM_ROWS.filter((row): row is BootCheckRow => row.kind === 'check');
   const showFooter = renderElapsed >= FOOTER_LINES[0].start;
   const showBootPrompt = renderElapsed >= FOOTER_LINES[1].start;
   const showCursor = showBootPrompt && renderElapsed < TOTAL_DURATION_MS && !paused;
   const biosAssetBase = `${import.meta.env.BASE_URL}bios/`;
-  const textStyle = {
-    color: '#808080',
-    fontFamily: '"Perfect DOS VGA 437 Win", "Lucida Console", "Courier New", monospace',
-    fontSize: Math.round(33 * scale),
-    lineHeight: `${Math.round(30 * scale)}px`,
-    letterSpacing: 0,
-    whiteSpace: 'pre' as const,
-    fontVariantLigatures: 'none' as const,
-  };
-  const layoutStyles = {
-    paddingTop: Math.round(32 * scale),
-    paddingLeft: Math.round(32 * scale),
-    paddingRight: Math.round(36 * scale),
-    paddingBottom: Math.round(28 * scale),
-  };
-  const logoWidth = Math.round(380 * scale);
-  const logoHeight = Math.round(261 * scale);
-  const iconWidth = Math.round(44 * scale);
-  const iconHeight = Math.round(66 * scale);
-  const contentMaxWidth = Math.round(1080 * scale);
 
   return (
     <div className="bios-screen">
       <div className="bios-screen__scanlines" />
 
-      <div className="bios-screen__content" style={layoutStyles}>
-        <img
-          src={`${biosAssetBase}epa-logo.png`}
-          alt=""
-          aria-hidden="true"
+      <div className="bios-screen__content bios-screen__content--boot">
+        <div
           style={{
-            position: 'absolute',
-            top: layoutStyles.paddingTop,
-            right: layoutStyles.paddingRight,
-            width: logoWidth,
-            height: logoHeight,
-            imageRendering: 'pixelated',
+            display: 'flex',
+            width: '100%',
+            height: '100%',
+            alignItems: 'flex-start',
+            gap: 57,
+            padding: 32,
           }}
-        />
-
-        <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+        >
           <div
             style={{
+              flex: '1 1 auto',
+              minWidth: 0,
+              height: '100%',
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'flex-start',
-              gap: Math.round(22 * scale),
-              maxWidth: contentMaxWidth,
             }}
           >
-            {renderElapsed >= HEADER_LINES[0].start ? (
-              <img
-                src={`${biosAssetBase}bios-icon.png`}
-                alt=""
-                aria-hidden="true"
+            {showHeader ? (
+              <div
                 style={{
-                  width: iconWidth,
-                  height: iconHeight,
-                  marginTop: Math.round(2 * scale),
-                  imageRendering: 'pixelated',
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  gap: 23,
                 }}
-              />
+              >
+                <img
+                  src={`${biosAssetBase}bios-icon.png`}
+                  alt=""
+                  aria-hidden="true"
+                  style={{
+                    width: 44,
+                    height: 66,
+                    imageRendering: 'pixelated',
+                    flexShrink: 0,
+                  }}
+                />
+
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                  {HEADER_LINES.map((line) =>
+                    renderElapsed >= line.start ? (
+                      <div key={line.key} style={textStyle}>
+                        {line.text}
+                      </div>
+                    ) : null
+                  )}
+                </div>
+              </div>
             ) : null}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: Math.round(4 * scale) }}>
-              {HEADER_LINES.map((line) =>
-                renderElapsed >= line.start ? (
-                  <div key={line.key} style={textStyle}>
-                    {line.text}
+            <div style={{ marginTop: 57, maxWidth: 1055 }}>
+              {showVersion ? <div style={textStyle}>Version CHRISXP-0410</div> : null}
+
+              {showCpuBlock ? (
+                <div style={{ marginTop: 38 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 32 }}>
+                    <div style={textStyle}>PENTIUM III CPU at 733MHz</div>
+                    <div style={textStyle}>PCI BUS at 33MHz</div>
                   </div>
-                ) : null
-              )}
+
+                  <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                    <div style={memoryLabelStyle}>{memoryRow.label}</div>
+                    <div style={memoryColonStyle}>:</div>
+                    <div style={textStyle}>{formatMemoryValue(renderElapsed, memoryRow)}</div>
+                  </div>
+                </div>
+              ) : null}
+
+              <div style={{ marginTop: 38 }}>
+                {pnpRows.map((row) =>
+                  renderElapsed >= row.start ? (
+                    <div key={row.key} style={textStyle}>
+                      {row.text}
+                    </div>
+                  ) : null
+                )}
+
+                {checkRows.map((row) =>
+                  renderElapsed >= row.start ? (
+                    <div
+                      key={row.key}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        width: '100%',
+                      }}
+                    >
+                      <div style={checkLabelStyle}>{row.label}</div>
+                      <div style={checkStatusStyle}>{formatCheckSuffix(renderElapsed, row)}</div>
+                    </div>
+                  ) : null
+                )}
+              </div>
+            </div>
+
+            <div style={{ marginTop: 'auto' }}>
+              {showFooter ? (
+                <div style={textStyle}>
+                  Press <span style={{ color: '#dfdfdf' }}>DEL</span> to enter SETUP
+                </div>
+              ) : null}
+
+              {showBootPrompt ? (
+                <div style={{ ...textStyle, marginTop: 5 }}>
+                  Press <span style={{ color: '#dfdfdf' }}>ENTER</span> to boot CHRISXP
+                  {showCursor ? <span className="bios-screen__cursor">_</span> : null}
+                </div>
+              ) : null}
+
+              {paused ? (
+                <div style={{ ...textStyle, marginTop: 5 }}>
+                  Press <span style={{ color: '#dfdfdf' }}>SPACE</span> to resume
+                </div>
+              ) : null}
             </div>
           </div>
 
-          <div
-            style={{
-              marginTop: Math.round(62 * scale),
-              display: 'flex',
-              flexDirection: 'column',
-              gap: Math.round(8 * scale),
-              maxWidth: contentMaxWidth,
-            }}
-          >
-            {SYSTEM_ROWS.map((item) => {
-              if (renderElapsed < item.start) {
-                return null;
-              }
-
-              if (item.kind === 'line') {
-                return (
-                  <div key={item.key} style={textStyle}>
-                    {item.text}
-                  </div>
-                );
-              }
-
-              if (item.kind === 'counter') {
-                return (
-                  <div key={item.key} style={textStyle}>
-                    {`${item.label} ${formatMemoryValue(renderElapsed, item)}`}
-                  </div>
-                );
-              }
-
-              return (
-                <div key={item.key} style={textStyle}>
-                  {`${item.label} ${formatCheckSuffix(renderElapsed, item)}`}
-                </div>
-              );
-            })}
-          </div>
-
-          <div
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-              maxWidth: contentMaxWidth,
-            }}
-          >
-            {showFooter ? (
-              <div style={textStyle}>
-                Press <span style={{ color: '#dfdfdf' }}>DEL</span> to enter SETUP
-              </div>
-            ) : null}
-
-            {showBootPrompt ? (
-              <div style={{ ...textStyle, marginTop: Math.round(6 * scale) }}>
-                Press <span style={{ color: '#dfdfdf' }}>ENTER</span> to boot CHRISXP
-                {showCursor ? <span className="bios-screen__cursor">_</span> : null}
-              </div>
-            ) : null}
-
-            {paused ? (
-              <div style={{ ...textStyle, marginTop: Math.round(12 * scale) }}>
-                Press <span style={{ color: '#dfdfdf' }}>SPACE</span> to resume
-              </div>
-            ) : null}
-          </div>
+          {showHeader ? (
+            <div style={{ flexShrink: 0 }}>
+              <img
+                src={`${biosAssetBase}epa-logo.png`}
+                alt=""
+                aria-hidden="true"
+                style={{
+                  width: 245,
+                  height: 168,
+                  imageRendering: 'pixelated',
+                  display: 'block',
+                }}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
     </div>
