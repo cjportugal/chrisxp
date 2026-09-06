@@ -1,4 +1,5 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
+import { bendFramebuffer, FRAMEBUFFER_BEND_DEFAULTS } from '../effects/FramebufferBend';
 import { desktopRevealCell, desktopRandomCharacter, sampleDesktopColors } from '../effects/desktopReveal';
 
 const ORIGINAL_DURATION = 6400;
@@ -6,7 +7,9 @@ const COLOR_HOLD_DURATION = ORIGINAL_DURATION * .24;
 const SCRAMBLE_DURATION = 1000;
 const TAKEOVER_DURATION = COLOR_HOLD_DURATION + SCRAMBLE_DURATION;
 const DESKTOP_RESOLVE_DURATION = 800;
-const DURATION = TAKEOVER_DURATION + DESKTOP_RESOLVE_DURATION;
+// Begin corruption as the first desktop cells arrive, then recover to the live desktop.
+const BEND_START = TAKEOVER_DURATION + DESKTOP_RESOLVE_DURATION * .65;
+const DURATION = BEND_START + FRAMEBUFFER_BEND_DEFAULTS.duration;
 
 export default function DesktopReveal({ onComplete }: { onComplete: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,6 +27,10 @@ export default function DesktopReveal({ onComplete }: { onComplete: () => void }
     let pixels = new Uint8ClampedArray(0);
     let columns = 0, rows = 0;
     let desktopPixels: Uint8ClampedArray<ArrayBufferLike> | null = null;
+    const bentDesktop = document.createElement('canvas');
+    const bentContext = bentDesktop.getContext('2d');
+    let desktopSource: Uint8ClampedArray<ArrayBufferLike> | null = null;
+    let lastBank = -1;
     let frame = 0, done = false, elapsed = 0, previous = performance.now();
     let width = 0, height = 0, dpr = 0, lastTick = -1;
     const finish = () => {
@@ -71,10 +78,27 @@ export default function DesktopReveal({ onComplete }: { onComplete: () => void }
         : time <= TAKEOVER_DURATION
           ? .24 + (time - COLOR_HOLD_DURATION) / SCRAMBLE_DURATION * .36
           : Math.min(1, .60 + (time - TAKEOVER_DURATION) / DESKTOP_RESOLVE_DURATION * .40);
-      if (resized) desktopPixels = null;
+      if (resized) { desktopPixels = null; desktopSource = null; lastBank = -1; }
       if (progress >= .66 && !desktopPixels) {
         const desktop = document.getElementById('desktop-root');
         if (desktop) desktopPixels = sampleDesktopColors(desktop, columns, rows, width, height);
+      }
+      const bendTime = time - BEND_START;
+      const bending = bendTime >= 0 && bendTime < FRAMEBUFFER_BEND_DEFAULTS.duration;
+      if (bending && bentContext) {
+        const desktop = document.getElementById('desktop-root');
+        if (desktop && !desktopSource) {
+          bentDesktop.width = 320;
+          bentDesktop.height = Math.max(1, Math.round(320 * height / width));
+          desktopSource = sampleDesktopColors(desktop, bentDesktop.width, bentDesktop.height, width, height);
+        }
+        const step = Math.floor(bendTime / FRAMEBUFFER_BEND_DEFAULTS.cadence);
+        const bank = step % 4;
+        if (desktopSource && bank !== lastBank) {
+          const data = bendFramebuffer(desktopSource, bentDesktop.width, bentDesktop.height, bank, FRAMEBUFFER_BEND_DEFAULTS.strength);
+          bentContext.putImageData(new ImageData(data, bentDesktop.width, bentDesktop.height), 0, 0);
+          lastBank = bank;
+        }
       }
       for (let row = 0; row < rows; row++) for (let col = 0; col < columns; col++) {
         const state = desktopRevealCell(col, row, progress, seed);
@@ -82,7 +106,14 @@ export default function DesktopReveal({ onComplete }: { onComplete: () => void }
         const y = Math.round(row * height * dpr / rows) / dpr;
         const w = Math.round((col + 1) * width * dpr / columns) / dpr - x;
         const h = Math.round((row + 1) * height * dpr / rows) / dpr - y;
-        if (state === 'desktop') ctx.clearRect(x, y, w, h);
+        if (state === 'desktop') {
+          if (bending && desktopSource && bentContext) {
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(bentDesktop, x / width * bentDesktop.width, y / height * bentDesktop.height,
+              w / width * bentDesktop.width, h / height * bentDesktop.height, x, y, w, h);
+            ctx.imageSmoothingEnabled = true;
+          } else ctx.clearRect(x, y, w, h);
+        }
         else if (state !== 'image') {
           const i = (row * columns + col) * 4;
           const ramp = ' .:-/+*?2389ON@';
