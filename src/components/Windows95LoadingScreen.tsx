@@ -38,11 +38,11 @@ export default function Windows95LoadingScreen({ onComplete }: Windows95LoadingS
   }, []);
 
   return (
-    <div className="win95-loading" role="status" aria-label="Windows 95 is starting">
+    <div className="win95-loading" role="status" aria-label="ChrisXP is starting">
       <div className="win95-loading__screen" aria-hidden="true">
         <img
           className="win95-loading__artwork"
-          src={`${import.meta.env.BASE_URL}windows95-boot.png`}
+          src={`${import.meta.env.BASE_URL}chrisxp-boot.png`}
           alt=""
           width={2032}
           height={1532}

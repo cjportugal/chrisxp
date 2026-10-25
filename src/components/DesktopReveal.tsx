@@ -122,7 +122,7 @@ export default function DesktopReveal({ onComplete }: { onComplete: () => void }
     window.addEventListener('keydown', onKey);
     preference.addEventListener('change', onPreference);
     if (preference.matches) finish();
-    else image.src = `${import.meta.env.BASE_URL}windows95-boot.png`;
+    else image.src = `${import.meta.env.BASE_URL}chrisxp-boot.png`;
     return () => {
       done = true; cancelAnimationFrame(frame); clearTimeout(loadTimeout);
       image.onload = null; image.onerror = null;

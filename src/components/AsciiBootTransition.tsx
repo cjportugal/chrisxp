@@ -60,7 +60,7 @@ export default function AsciiBootTransition({ onComplete }: { onComplete: () => 
     };
     image.onerror = finish;
     const reducedTimeout = preference.matches ? window.setTimeout(finish, 0) : null;
-    if (!preference.matches) image.src = `${import.meta.env.BASE_URL}windows95-boot.png`;
+    if (!preference.matches) image.src = `${import.meta.env.BASE_URL}chrisxp-boot.png`;
     return () => {
       finished = true;
       restoreBios();
@@ -74,5 +74,5 @@ export default function AsciiBootTransition({ onComplete }: { onComplete: () => 
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="ascii-boot-transition" role="img" aria-label="Starting Windows 95" />;
+  return <canvas ref={canvasRef} className="ascii-boot-transition" role="img" aria-label="Starting ChrisXP" />;
 }
