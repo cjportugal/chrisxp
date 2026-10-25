@@ -157,7 +157,7 @@ function strip() {
 
 // --- 1995 treatment: drop to a low-res, reduced-palette bitmap, crush it through JPEG, blow it back up.
 async function crunch() {
-  const LOW = 6, lw = Math.round(W / LOW), lh = Math.round(H / LOW);
+  const LOW = 4, lw = Math.round(W / LOW), lh = Math.round(H / LOW);
   const low = document.createElement('canvas'); low.width = lw; low.height = lh;
   const lc = low.getContext('2d');
   lc.imageSmoothingQuality = 'high';
@@ -171,7 +171,7 @@ async function crunch() {
   }
   lc.putImageData(img, 0, 0);
   const jpeg = new Image();
-  jpeg.src = low.toDataURL('image/jpeg', .38);
+  jpeg.src = low.toDataURL('image/jpeg', .6);
   await jpeg.decode();
   lc.drawImage(jpeg, 0, 0);
   // Replicate pixels by hand; headless Chrome still filters drawImage with smoothing disabled.
