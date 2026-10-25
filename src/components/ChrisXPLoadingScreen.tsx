@@ -68,27 +68,27 @@ export default function ChrisXPLoadingScreen({ active = true, onComplete }: Chri
   return (
     <main className="nfo-screen nfo-screen--splash" aria-label="Chris XP startup">
       <div className="nfo-splash">
-        <img
-          className="nfo-splash__art"
-          src={`${import.meta.env.BASE_URL}chrisxp-boot.png`}
-          alt="Chris XP"
-          width={2032}
-          height={1532}
-          fetchPriority="high"
-          draggable={false}
-        />
-      </div>
-
-      <footer className="nfo-footer">
-        <div className="nfo-loader" role="progressbar" aria-label={paused ? 'Loading paused' : 'Starting Chris XP'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
-          <div className="nfo-loader__cells" aria-hidden="true">
-            {Array.from({ length: 256 }, (_, column) => {
-              const position = ((column - phase) % 48 + 48) % 48;
-              return <span key={column} style={{ color: LOADER_PALETTE[Math.floor(position / 6)] }}>{LOADER_GLYPHS[position % 6]}</span>;
-            })}
+        <div className="nfo-splash__frame">
+          <img
+            className="nfo-splash__art"
+            src={`${import.meta.env.BASE_URL}chrisxp-boot.png`}
+            alt="Chris XP"
+            width={2032}
+            height={1532}
+            fetchPriority="high"
+            draggable={false}
+          />
+          {/* Takes the place of the bitmap's bottom strip, cropped to the splash width. */}
+          <div className="nfo-loader" role="progressbar" aria-label={paused ? 'Loading paused' : 'Starting Chris XP'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
+            <div className="nfo-loader__cells" aria-hidden="true">
+              {Array.from({ length: 256 }, (_, column) => {
+                const position = ((column - phase) % 48 + 48) % 48;
+                return <span key={column} style={{ color: LOADER_PALETTE[Math.floor(position / 6)] }}>{LOADER_GLYPHS[position % 6]}</span>;
+              })}
+            </div>
           </div>
         </div>
-      </footer>
+      </div>
     </main>
   );
 }

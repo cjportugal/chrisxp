@@ -1,9 +1,11 @@
 import { ASCII_DEFAULTS, type AsciiOptions } from './AsciiRenderer';
 
-export type TextSwitchOptions = Pick<AsciiOptions, 'cellSize' | 'color' | 'foreground' | 'contrast' | 'characters' | 'duration'> & { refreshRate: number; sizeMode: 'preserve' | 'stepped'; separateBootStrip: boolean; bootStripHeight: number | null };
+export type TextSwitchOptions = Pick<AsciiOptions, 'cellSize' | 'color' | 'foreground' | 'contrast' | 'characters' | 'duration'> & { refreshRate: number; sizeMode: 'preserve' | 'stepped'; separateBootStrip: boolean; bootStrip: BootStripArea | null };
+/** Loader box as fractions of the target image. */
+export interface BootStripArea { x: number; y: number; width: number; height: number }
 export const TEXT_SWITCH_DEFAULTS: TextSwitchOptions = {
   cellSize: 9, color: true, foreground: '#dce8ee', contrast: 1.15,
-  characters: ASCII_DEFAULTS.characters, duration: 4800, refreshRate: 10, sizeMode: 'preserve', separateBootStrip: false, bootStripHeight: null,
+  characters: ASCII_DEFAULTS.characters, duration: 4800, refreshRate: 10, sizeMode: 'preserve', separateBootStrip: false, bootStrip: null,
 };
 
 interface Glyph {
@@ -84,8 +86,10 @@ export class TextSwitchTransition {
     this.width = 0;
   }
 
-  private get stripHeight() {
-    return Math.min(this.rect.height, this.options.bootStripHeight ?? this.rect.height * .031);
+  /** The loader's box in canvas pixels; defaults to a full-width strip along the bottom edge. */
+  private get strip() {
+    const r = this.rect, area = this.options.bootStrip ?? { x: 0, y: .969, width: 1, height: .031 };
+    return { x: r.x + area.x * r.width, y: r.y + area.y * r.height, width: area.width * r.width, height: area.height * r.height };
   }
 
   private prepare(progress: number) {
@@ -186,7 +190,8 @@ export class TextSwitchTransition {
     const r = this.rect;
     ctx.save();
     if (this.options.separateBootStrip) {
-      ctx.beginPath(); ctx.rect(r.x, r.y, r.width, r.height - this.stripHeight); ctx.clip();
+      const s = this.strip;
+      ctx.beginPath(); ctx.rect(r.x, r.y, r.width, r.height); ctx.rect(s.x, s.y, s.width, s.height); ctx.clip('evenodd');
     }
     for (let i = 0; i < this.cells.length; i++) {
       const target = this.cells[i];
@@ -229,19 +234,19 @@ export class TextSwitchTransition {
 
   private drawBootStrip(progress: number) {
     const ctx = this.ctx, r = this.rect;
-    const height = this.stripHeight, y = r.y + r.height - height;
-    const columns = Math.ceil(r.width / this.cellWidth);
+    const { x: left, y, width: span, height } = this.strip;
+    const columns = Math.ceil(span / this.cellWidth);
     const ramp = '░▒▓█▓▒';
     const colors = ['#0000aa', '#0000aa', '#5555ff', '#5555ff', '#aaaaaa', '#ffffff', '#aaaaaa', '#5555ff'];
-    ctx.save(); ctx.beginPath(); ctx.rect(r.x, y, r.width, height); ctx.clip();
-    ctx.fillStyle = '#000'; ctx.fillRect(r.x, y, r.width, height);
+    ctx.save(); ctx.beginPath(); ctx.rect(left, y, span, height); ctx.clip();
+    ctx.fillStyle = '#000'; ctx.fillRect(left, y, span, height);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     for (let col = 0; col < columns; col++) {
       const u = col / columns;
       const local = (progress - u * .55) / .40;
       if (local < 0) continue;
-      const x = r.x + col * this.cellWidth;
-      const width = Math.min(this.cellWidth, r.x + r.width - x);
+      const x = left + col * this.cellWidth;
+      const width = Math.min(this.cellWidth, left + span - x);
       if (local >= 1) {
         // Resolve to the actual character strip, so it never becomes a solid color bar.
         ctx.drawImage(this.target, (x - r.x) / r.width * this.targetWidth,
