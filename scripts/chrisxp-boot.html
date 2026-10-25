@@ -16,7 +16,7 @@
 <body>
 <canvas id="splash" width="2032" height="1532"></canvas>
 <script>
-const W = 2032, H = 1532, STRIP = H * .031;
+const W = 2032, H = 1532;
 const canvas = document.getElementById('splash');
 const ctx = canvas.getContext('2d');
 const lerp = (a, b, t) => a + (b - a) * t;
@@ -145,16 +145,6 @@ function wordmark() {
   ctx.shadowColor = 'transparent';
 }
 
-// --- Loading strip: the resting palette that the CSS animation and ASCII transition take over.
-function strip() {
-  const colors = ['#aab8c1', '#a0b2c0', '#95adbe', '#88a5bb', '#7b9cb8', '#6d93b5', '#5d88b2', '#507eaf', '#5d88b2', '#6d93b5', '#7b9cb8', '#88a5bb', '#95adbe', '#a0b2c0'];
-  for (let x = 0; x < W; x++) {
-    const u = x / W;
-    ctx.fillStyle = colors[u < .35 ? 0 : Math.min(13, 1 + Math.floor((u - .35) / .05))];
-    ctx.fillRect(x, H - STRIP, 1, STRIP);
-  }
-}
-
 // --- 1995 treatment: drop to a low-res, reduced-palette bitmap, crush it through JPEG, blow it back up.
 async function crunch() {
   const LOW = 4, lw = Math.round(W / LOW), lh = Math.round(H / LOW);
@@ -188,7 +178,6 @@ document.fonts.load('312px "Arial Black"').then(() => document.fonts.load('200 3
   flag();
   wordmark();
   await crunch();
-  strip();
 });
 </script>
 </body>

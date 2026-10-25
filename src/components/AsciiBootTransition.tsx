@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
 import { TextSwitchTransition } from '../effects/TextSwitchTransition';
+import { snapshotTextScreen } from '../effects/snapshotTextScreen';
 
 const TRANSITION_DURATION = 4800;
 
@@ -9,14 +10,15 @@ export default function AsciiBootTransition({ onComplete }: { onComplete: () => 
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) { complete(); return; }
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
     const bios = document.querySelector<HTMLElement>('.bios-screen');
+    const readme = document.querySelector<HTMLElement>('.nfo-screen');
     const previousVisibility = bios?.style.visibility ?? '';
     const restoreBios = () => { if (bios) bios.style.visibility = previousVisibility; };
     let frame = 0;
     let finished = false;
-    const image = new Image();
+    let renderer: TextSwitchTransition | null = null;
     const finish = () => {
       if (finished) return;
       finished = true;
@@ -33,12 +35,18 @@ export default function AsciiBootTransition({ onComplete }: { onComplete: () => 
     };
     preference.addEventListener('change', onPreference);
     window.addEventListener('keydown', onKey);
-    image.onload = async () => {
+    const prepare = async () => {
       try {
         await document.fonts.ready;
         if (finished) return;
-        if (preference.matches || !bios) { finish(); return; }
-        const renderer = new TextSwitchTransition(canvas, bios, image, { duration: TRANSITION_DURATION, color: true, refreshRate: 10, sizeMode: 'preserve', separateBootStrip: true });
+        if (preference.matches || !bios || !readme) { finish(); return; }
+        // The splash bitmap must be decoded before the snapshot, or it captures as black.
+        await Promise.all(Array.from(readme.querySelectorAll('img'), (image) => image.decode().catch(() => {})));
+        if (finished) return;
+        renderer = new TextSwitchTransition(canvas, bios, snapshotTextScreen(readme), {
+          duration: TRANSITION_DURATION, color: true, refreshRate: 10, sizeMode: 'preserve',
+          separateBootStrip: true, bootStripHeight: readme.querySelector('.nfo-loader')?.getBoundingClientRect().height ?? 24,
+        });
         renderer.draw(0);
         bios.style.visibility = 'hidden';
         clearTimeout(loadTimeout);
@@ -50,7 +58,7 @@ export default function AsciiBootTransition({ onComplete }: { onComplete: () => 
           last = now;
           if (!document.hidden) elapsed += delta;
           try {
-            renderer.draw(Math.min(1, elapsed / TRANSITION_DURATION));
+            renderer?.draw(Math.min(1, elapsed / TRANSITION_DURATION));
             if (elapsed >= TRANSITION_DURATION) { finish(); return; }
             frame = requestAnimationFrame(tick);
           } catch { finish(); }
@@ -58,21 +66,24 @@ export default function AsciiBootTransition({ onComplete }: { onComplete: () => 
         frame = requestAnimationFrame(tick);
       } catch { finish(); }
     };
-    image.onerror = finish;
+    const onResize = () => {
+      if (finished || !renderer || !readme) return;
+      try { renderer.setTarget(snapshotTextScreen(readme)); } catch { finish(); }
+    };
+    window.addEventListener('resize', onResize);
     const reducedTimeout = preference.matches ? window.setTimeout(finish, 0) : null;
-    if (!preference.matches) image.src = `${import.meta.env.BASE_URL}chrisxp-boot.png`;
+    if (!preference.matches) void prepare();
     return () => {
       finished = true;
       restoreBios();
       cancelAnimationFrame(frame);
       clearTimeout(loadTimeout);
       if (reducedTimeout !== null) clearTimeout(reducedTimeout);
-      image.onload = null;
-      image.onerror = null;
+      window.removeEventListener('resize', onResize);
       preference.removeEventListener('change', onPreference);
       window.removeEventListener('keydown', onKey);
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="ascii-boot-transition" role="img" aria-label="Starting ChrisXP" />;
+  return <canvas ref={canvasRef} className="ascii-boot-transition" role="img" aria-label="Starting Chris XP" />;
 }
