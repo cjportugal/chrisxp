@@ -23,7 +23,7 @@ export const WALLPAPERS: WallpaperSource[] = Object.entries(wallpaperModules)
   })
   .sort((a, b) => a.id.localeCompare(b.id));
 
-export const DEFAULT_WALLPAPER_ID = WALLPAPERS.find((w) => w.id === 'csms-010')?.id ?? WALLPAPERS[0]?.id ?? '';
+export const DEFAULT_WALLPAPER_ID = WALLPAPERS.find((w) => w.id === 'csms-019')?.id ?? WALLPAPERS[0]?.id ?? '';
 
 export function getWallpaper(id: string): WallpaperSource | undefined {
   return WALLPAPERS.find((w) => w.id === id);

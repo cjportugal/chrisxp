@@ -12,6 +12,7 @@
 :root {
   --cx-ink: #101010;
   --cx-paper: #f2f1ea;
+  /* 50% checker with 2px cells. A full `background` value, so use it with the shorthand, not background-image. */
   --cx-dither: repeating-conic-gradient(var(--cx-ink) 0 25%, var(--cx-paper) 0 50%) 0 0 / 4px 4px;
 
   --cx-cyan: #3fc1ff;

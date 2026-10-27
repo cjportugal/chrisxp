@@ -11,7 +11,7 @@ export default function Wallpaper() {
     return (
       <div
         className="desktop-wallpaper cx-dither"
-        style={{ ...BASE_STYLE, backgroundColor: '#808080', backgroundImage: 'var(--cx-dither)' }}
+        style={{ ...BASE_STYLE, background: 'var(--cx-dither)', backgroundColor: '#808080' }}
       />
     );
   }
