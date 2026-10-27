@@ -4,6 +4,8 @@ import { BOOT_LOADER_PALETTE } from '../effects/TextSwitchTransition';
 
 const LOAD_DURATION = 6400;
 const LOADER_GLYPHS = '░▒▓█▓▒';
+// The loader advances in coarse jumps, a few frames a second, at the same overall speed.
+const LOADER_STEP_MS = 300, LOADER_STEP_CELLS = 3;
 // Terminal-style typing: the cursor blinks, the letters type in one at a time, then it blinks after the last.
 const TYPE_START = 900, LETTER_MS = 200, BLINK_MS = 500;
 /** Block cursors sized to the letters they follow, in grid cells: "Chris" x-height, then the smaller, lower "xp". */
@@ -105,6 +107,7 @@ export default function ChrisXPLoadingScreen({ active = true, onComplete }: Chri
   }, [active, paused]);
 
   const phase = reducedMotion ? 0 : Math.floor(elapsed / 100);
+  const loaderShift = reducedMotion ? 0 : Math.floor(elapsed / LOADER_STEP_MS) * LOADER_STEP_CELLS;
   const progress = Math.min(100, Math.floor(elapsed / LOAD_DURATION * 100));
   const letters = reducedMotion ? CHRIS95_LETTERS
     : elapsed < TYPE_START ? 0 : Math.min(CHRIS95_LETTERS, Math.floor((elapsed - TYPE_START) / LETTER_MS) + 1);
@@ -127,7 +130,7 @@ export default function ChrisXPLoadingScreen({ active = true, onComplete }: Chri
       <div className="nfo-loader" role="progressbar" aria-label={paused ? 'Loading paused' : 'Starting Chris XP'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
         <div className="nfo-loader__cells" aria-hidden="true">
           {Array.from({ length: 256 }, (_, column) => {
-            const position = ((column - phase) % 48 + 48) % 48;
+            const position = ((column - loaderShift) % 48 + 48) % 48;
             return <span key={column} style={{ color: BOOT_LOADER_PALETTE[Math.floor(position / 6)] }}>{LOADER_GLYPHS[position % 6]}</span>;
           })}
         </div>
