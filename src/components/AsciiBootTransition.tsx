@@ -51,9 +51,6 @@ export default function AsciiBootTransition({ onComplete }: { onComplete: () => 
         await document.fonts.ready;
         if (finished) return;
         if (preference.matches || !bios || !readme) { finish(); return; }
-        // The splash bitmap must be decoded before the snapshot, or it captures as black.
-        await Promise.all(Array.from(readme.querySelectorAll('img'), (image) => image.decode().catch(() => {})));
-        if (finished) return;
         renderer = new TextSwitchTransition(canvas, bios, snapshotTextScreen(readme), {
           duration: TRANSITION_DURATION, color: true, refreshRate: 10, sizeMode: 'preserve',
           separateBootStrip: true, bootStrip: measureLoader(readme),

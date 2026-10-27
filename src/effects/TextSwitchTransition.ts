@@ -1,6 +1,8 @@
 import { ASCII_DEFAULTS, type AsciiOptions } from './AsciiRenderer';
 
 export type TextSwitchOptions = Pick<AsciiOptions, 'cellSize' | 'color' | 'foreground' | 'contrast' | 'characters' | 'duration'> & { refreshRate: number; sizeMode: 'preserve' | 'stepped'; separateBootStrip: boolean; bootStrip: BootStripArea | null };
+/** Colours of the startup screen's character loader, shared so the transition builds the same strip. */
+export const BOOT_LOADER_PALETTE = ['#555555', '#555555', '#aaaaaa', '#aaaaaa', '#cccccc', '#ffffff', '#cccccc', '#aaaaaa'];
 /** Loader box as fractions of the target image. */
 export interface BootStripArea { x: number; y: number; width: number; height: number }
 export const TEXT_SWITCH_DEFAULTS: TextSwitchOptions = {
@@ -237,7 +239,7 @@ export class TextSwitchTransition {
     const { x: left, y, width: span, height } = this.strip;
     const columns = Math.ceil(span / this.cellWidth);
     const ramp = '░▒▓█▓▒';
-    const colors = ['#0000aa', '#0000aa', '#5555ff', '#5555ff', '#aaaaaa', '#ffffff', '#aaaaaa', '#5555ff'];
+    const colors = BOOT_LOADER_PALETTE;
     ctx.save(); ctx.beginPath(); ctx.rect(left, y, span, height); ctx.clip();
     ctx.fillStyle = '#000'; ctx.fillRect(left, y, span, height);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
