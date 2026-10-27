@@ -77,3 +77,125 @@
   background: var(--cx-dither);
   box-shadow: none;
 }
+
+/* ---- Window frame ------------------------------------------------------------------------- */
+
+.cx-window {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+  box-shadow: var(--cx-shadow);
+  overflow: visible;
+}
+
+.cx-titlebar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 20px;
+  padding: 0 3px;
+  gap: 3px;
+  background: var(--cx-paper);
+  border-bottom: 1px solid var(--cx-ink);
+  cursor: move;
+}
+
+/* System 1: six 1px pinstripes behind the title when the window is frontmost. */
+.cx-window[data-active='true'] .cx-titlebar {
+  background:
+    repeating-linear-gradient(to bottom, var(--cx-ink) 0 1px, transparent 1px 2px) 0 4px / 100% 11px no-repeat,
+    var(--cx-paper);
+}
+
+.cx-titlebar__center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* The label is only as wide as its text, so the stripes show on either side of it. */
+.cx-titlebar__title {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 3px 6px 2px;
+  background: var(--cx-paper);
+}
+
+.cx-window[data-active='false'] .cx-titlebar__title {
+  color: var(--cx-ink);
+  opacity: 0.55;
+}
+
+.cx-titlebar__controls {
+  display: flex;
+  gap: 3px;
+}
+
+.cx-window button.cx-titlebar__box {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  height: 19px;
+  padding: 0 2px;
+  margin: 0;
+  border: 0;
+  background: var(--cx-paper);
+  cursor: default;
+}
+
+.cx-window button.cx-titlebar__box:active img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.cx-window[data-active='false'] .cx-titlebar__box--close,
+.cx-window[data-active='false'] .cx-titlebar__controls {
+  visibility: hidden;
+}
+
+.cx-window__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: var(--cx-paper);
+  color: var(--cx-ink);
+}
+
+.cx-window__grip {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+/* 1-bit scrollbars, scoped to our windows so Webamp keeps its own. */
+.cx-window__body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--cx-ink) var(--cx-paper);
+}
+
+.cx-window__body::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+.cx-window__body::-webkit-scrollbar-track {
+  background: var(--cx-dither);
+  border-left: 1px solid var(--cx-ink);
+}
+
+.cx-window__body::-webkit-scrollbar-thumb {
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+}
+
+.cx-window__body::-webkit-scrollbar-corner {
+  background: var(--cx-paper);
+}
