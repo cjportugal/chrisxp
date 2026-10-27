@@ -1,9 +1,13 @@
 import { ASCII_DEFAULTS, type AsciiOptions } from './AsciiRenderer';
 
-export type TextSwitchOptions = Pick<AsciiOptions, 'cellSize' | 'color' | 'foreground' | 'contrast' | 'characters' | 'duration'> & { refreshRate: number; sizeMode: 'preserve' | 'stepped'; separateBootStrip: boolean };
+export type TextSwitchOptions = Pick<AsciiOptions, 'cellSize' | 'color' | 'foreground' | 'contrast' | 'characters' | 'duration'> & { refreshRate: number; sizeMode: 'preserve' | 'stepped'; separateBootStrip: boolean; bootStrip: BootStripArea | null };
+/** Colours of the startup screen's character loader, shared so the transition builds the same strip. */
+export const BOOT_LOADER_PALETTE = ['#555555', '#555555', '#aaaaaa', '#aaaaaa', '#cccccc', '#ffffff', '#cccccc', '#aaaaaa'];
+/** Loader box as fractions of the target image. */
+export interface BootStripArea { x: number; y: number; width: number; height: number }
 export const TEXT_SWITCH_DEFAULTS: TextSwitchOptions = {
   cellSize: 9, color: true, foreground: '#dce8ee', contrast: 1.15,
-  characters: ASCII_DEFAULTS.characters, duration: 4800, refreshRate: 10, sizeMode: 'preserve', separateBootStrip: false,
+  characters: ASCII_DEFAULTS.characters, duration: 4800, refreshRate: 10, sizeMode: 'preserve', separateBootStrip: false, bootStrip: null,
 };
 
 interface Glyph {
@@ -19,7 +23,7 @@ const hash = (i: number) => { const n = Math.sin(i * 127.1 + 78.233) * 43758.545
 export class TextSwitchTransition {
   private canvas: HTMLCanvasElement;
   private ctx: CanvasRenderingContext2D;
-  private target: HTMLImageElement;
+  private target: HTMLImageElement | HTMLCanvasElement;
   private glyphs: Glyph[] = [];
   private sprites: Sprite[] = [];
   private cells: Cell[] = [];
@@ -33,7 +37,7 @@ export class TextSwitchTransition {
   private rect = { x: 0, y: 0, width: 0, height: 0 };
   options: TextSwitchOptions;
 
-  constructor(canvas: HTMLCanvasElement, source: HTMLElement, target: HTMLImageElement, options: Partial<TextSwitchOptions> = {}) {
+  constructor(canvas: HTMLCanvasElement, source: HTMLElement, target: HTMLImageElement | HTMLCanvasElement, options: Partial<TextSwitchOptions> = {}) {
     this.canvas = canvas;
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas is unavailable');
@@ -71,6 +75,25 @@ export class TextSwitchTransition {
     if (!this.glyphs.length) throw new Error('Text switch requires visible source text');
   }
 
+  private get targetWidth() {
+    return this.target instanceof HTMLImageElement ? this.target.naturalWidth : this.target.width;
+  }
+
+  private get targetHeight() {
+    return this.target instanceof HTMLImageElement ? this.target.naturalHeight : this.target.height;
+  }
+
+  setTarget(target: HTMLCanvasElement) {
+    this.target = target;
+    this.width = 0;
+  }
+
+  /** The loader's box in canvas pixels; defaults to a full-width strip along the bottom edge. */
+  private get strip() {
+    const r = this.rect, area = this.options.bootStrip ?? { x: 0, y: .969, width: 1, height: .031 };
+    return { x: r.x + area.x * r.width, y: r.y + area.y * r.height, width: area.width * r.width, height: area.height * r.height };
+  }
+
   private prepare(progress: number) {
     const box = this.canvas.getBoundingClientRect();
     const source = this.glyphs[0];
@@ -91,8 +114,8 @@ export class TextSwitchTransition {
     const dpr = Math.min(devicePixelRatio || 1, 2);
     this.canvas.width = Math.round(this.width * dpr); this.canvas.height = Math.round(this.height * dpr);
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    const scale = Math.min(this.width / this.target.naturalWidth, this.height / this.target.naturalHeight);
-    const width = this.target.naturalWidth * scale, height = this.target.naturalHeight * scale;
+    const scale = Math.min(this.width / this.targetWidth, this.height / this.targetHeight);
+    const width = this.targetWidth * scale, height = this.targetHeight * scale;
     this.rect = { x: (this.width - width) / 2, y: (this.height - height) / 2, width, height };
     const cell = this.cellWidth, ch = this.cellHeight;
     const cols = Math.ceil(width / cell), rows = Math.ceil(height / ch);
@@ -169,7 +192,8 @@ export class TextSwitchTransition {
     const r = this.rect;
     ctx.save();
     if (this.options.separateBootStrip) {
-      ctx.beginPath(); ctx.rect(r.x, r.y, r.width, r.height * .969); ctx.clip();
+      const s = this.strip;
+      ctx.beginPath(); ctx.rect(r.x, r.y, r.width, r.height); ctx.rect(s.x, s.y, s.width, s.height); ctx.clip('evenodd');
     }
     for (let i = 0; i < this.cells.length; i++) {
       const target = this.cells[i];
@@ -180,9 +204,9 @@ export class TextSwitchTransition {
         : .63 + target.y / this.height * .17 + target.x / this.width * .06 + target.seed * .08;
       if (p >= resolveAt) {
         const w = Math.min(cell, r.x + r.width - target.x), h = Math.min(ch, r.y + r.height - target.y);
-        ctx.drawImage(this.target, (target.x - r.x) / r.width * this.target.naturalWidth,
-          (target.y - r.y) / r.height * this.target.naturalHeight, w / r.width * this.target.naturalWidth,
-          h / r.height * this.target.naturalHeight, target.x, target.y, w + .25, h + .25);
+        ctx.drawImage(this.target, (target.x - r.x) / r.width * this.targetWidth,
+          (target.y - r.y) / r.height * this.targetHeight, w / r.width * this.targetWidth,
+          h / r.height * this.targetHeight, target.x, target.y, w + .25, h + .25);
         continue;
       }
       if (this.options.separateBootStrip) {
@@ -212,31 +236,27 @@ export class TextSwitchTransition {
 
   private drawBootStrip(progress: number) {
     const ctx = this.ctx, r = this.rect;
-    const y = r.y + r.height * .969, height = r.height * .031;
-    const columns = Math.ceil(r.width / this.cellWidth);
-    const ramp = '.:-=+*#%@';
-    // Same initial colors and proportions as the CSS loading animation.
-    const colors = ['#aab8c1', '#a0b2c0', '#95adbe', '#88a5bb', '#7b9cb8', '#6d93b5', '#5d88b2', '#507eaf', '#5d88b2', '#6d93b5', '#7b9cb8', '#88a5bb', '#95adbe', '#a0b2c0'];
-    const colorAt = (u: number) => colors[u < .35 ? 0 : Math.min(13, 1 + Math.floor((u - .35) / .05))];
-    ctx.save(); ctx.beginPath(); ctx.rect(r.x, y, r.width, height); ctx.clip();
-    ctx.fillStyle = '#000'; ctx.fillRect(r.x, y, r.width, height);
+    const { x: left, y, width: span, height } = this.strip;
+    const columns = Math.ceil(span / this.cellWidth);
+    const ramp = '░▒▓█▓▒';
+    const colors = BOOT_LOADER_PALETTE;
+    ctx.save(); ctx.beginPath(); ctx.rect(left, y, span, height); ctx.clip();
+    ctx.fillStyle = '#000'; ctx.fillRect(left, y, span, height);
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     for (let col = 0; col < columns; col++) {
       const u = col / columns;
       const local = (progress - u * .55) / .40;
       if (local < 0) continue;
-      const x = r.x + col * this.cellWidth;
-      const width = Math.min(this.cellWidth, r.x + r.width - x);
+      const x = left + col * this.cellWidth;
+      const width = Math.min(this.cellWidth, left + span - x);
       if (local >= 1) {
-        // Paint the bar at pixel granularity so the handoff to CSS has no block edges.
-        for (let offset = 0; offset < width; offset++) {
-          ctx.fillStyle = colorAt((x + offset - r.x) / r.width);
-          ctx.fillRect(x + offset, y, Math.min(1, width - offset), height);
-        }
+        // Resolve to the actual character strip, so it never becomes a solid color bar.
+        ctx.drawImage(this.target, (x - r.x) / r.width * this.targetWidth,
+          (y - r.y) / r.height * this.targetHeight, width / r.width * this.targetWidth,
+          height / r.height * this.targetHeight, x, y, width, height);
       } else {
-        const density = clamp(local / .65);
-        ctx.fillStyle = local >= .75 ? colorAt(u) : this.options.foreground;
-        ctx.fillText(ramp[Math.floor(density * (ramp.length - 1))], x + this.cellWidth / 2, y + height / 2);
+        ctx.fillStyle = colors[Math.floor(col / 3) % colors.length];
+        ctx.fillText(ramp[Math.floor(clamp(local) * (ramp.length - 1))], x + this.cellWidth / 2, y + height / 2);
       }
     }
     ctx.restore();
