@@ -1,26 +1,18 @@
-import { useState } from 'react';
 import type { AppType } from '../apps/registry';
 import { getAppDefinition } from '../apps/registry';
 import Winamp from '../apps/Winamp';
 import { useWindowStore } from '../store/windowStore';
 import DesktopIcon from './DesktopIcon';
 import Taskbar from './Taskbar';
+import Wallpaper from './Wallpaper';
 import Window from './Window';
 
-const bgModules = import.meta.glob('../assets/bg/*.{jpg,jpeg,png,gif,webp,avif}', {
-  eager: true,
-  import: 'default',
-  query: '?url',
-});
-const bgList = Object.values(bgModules as Record<string, string>).sort();
-
-type DesktopOrderItem = AppType | 'recycle-bin' | 'change-background';
+type DesktopOrderItem = AppType | 'recycle-bin';
 
 const DESKTOP_ICON_ORDER: DesktopOrderItem[] = [
   'terminal',
   'recycle-bin',
   'winamp',
-  'change-background',
   'diablo',
 ];
 
@@ -34,41 +26,11 @@ interface DesktopIconItem {
 
 export default function Desktop() {
   const { windows, winampOpen, openWindow } = useWindowStore();
-  const [bgIndex, setBgIndex] = useState<number | null>(null);
-
-  const handleChangeBackground = () => {
-    if (bgList.length === 0) {
-      return;
-    }
-
-    setBgIndex((currentIndex) => {
-      if (currentIndex === null) {
-        return 0;
-      }
-
-      if (currentIndex >= bgList.length - 1) {
-        return null;
-      }
-
-      return currentIndex + 1;
-    });
-  };
-
   const desktopIconItems: DesktopIconItem[] = [];
 
   for (const item of DESKTOP_ICON_ORDER) {
     if (item === 'recycle-bin') {
       desktopIconItems.push({ key: item, label: 'Recycle Bin', img: `${import.meta.env.BASE_URL}icon-recycle-bin.png` });
-      continue;
-    }
-
-    if (item === 'change-background') {
-      desktopIconItems.push({
-        key: item,
-        label: 'Change Background',
-        img: `${import.meta.env.BASE_URL}icon-change-bg.png`,
-        onClick: handleChangeBackground,
-      });
       continue;
     }
 
@@ -85,8 +47,6 @@ export default function Desktop() {
     });
   }
 
-  const bgImage = bgIndex !== null ? `url(${bgList[bgIndex]})` : 'none';
-
   return (
     <div
       id="desktop-root"
@@ -98,18 +58,7 @@ export default function Desktop() {
         overflow: 'hidden',
       }}
     >
-      <div
-        className="desktop-wallpaper"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: bgImage,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-          zIndex: 0,
-        }}
-      />
+      <Wallpaper />
 
       <div
         id="webamp-host"
