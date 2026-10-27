@@ -480,6 +480,7 @@ body {
 }
 
 .nfo-splash__frame {
+  position: relative;
   display: grid;
   width: max-content;
   line-height: 1;
@@ -495,6 +496,21 @@ body {
   white-space: pre;
   font-variant-ligatures: none;
   user-select: none;
+}
+
+/* Off the 16px pixel grid, a one-dot echo closes the hairline seams between block characters. */
+.nfo-splash__frame--patched :is(.nfo-splash__art, .nfo-splash__cursor) {
+  text-shadow: 0.0625em 0 currentColor;
+}
+
+.nfo-splash__cursor {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: #aaa;
+  font: inherit;
+  line-height: 1;
 }
 
 .nfo-screen--splash .nfo-loader {
