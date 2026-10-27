@@ -467,9 +467,9 @@ body {
   flex: 1 0 0.5em;
 }
 
-/* Splash variant: the letterboxed ChrisXP bitmap, with the text-mode loader as its bottom strip. */
+/* Splash variant: the ChrisXP block-character art, with the text-mode loader along the bottom of the screen. */
 .nfo-screen--splash {
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
 }
 
 .nfo-splash {
@@ -477,35 +477,48 @@ body {
   place-items: center;
   min-height: 0;
   overflow: hidden;
-  container-type: size;
 }
 
 .nfo-splash__frame {
   position: relative;
-  width: min(100cqw, 100cqh * 2032 / 1532);
-  aspect-ratio: 2032 / 1532;
-  overflow: hidden;
-  container-type: size;
+  display: grid;
+  width: max-content;
+  line-height: 1;
 }
 
 .nfo-splash__art {
-  display: block;
-  width: 100%;
-  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: #aaa;
+  font: inherit;
+  line-height: 1;
+  white-space: pre;
+  font-variant-ligatures: none;
   user-select: none;
 }
 
-.nfo-splash .nfo-loader {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 3.1cqh;
-  border-top: 0;
+/* Off the 16px pixel grid, a one-dot echo closes the hairline seams between block characters. */
+.nfo-splash__frame--patched :is(.nfo-splash__art, .nfo-splash__cursor) {
+  text-shadow: 0.0625em 0 currentColor;
 }
 
-.nfo-splash .nfo-loader__cells {
-  font-size: 3.1cqh;
+.nfo-splash__cursor {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  background: none;
+  color: #aaa;
+  font: inherit;
+  line-height: 1;
+}
+
+.nfo-screen--splash .nfo-loader {
+  height: 33px;
+}
+
+.nfo-screen--splash .nfo-loader__cells {
+  font-size: 32px;
 }
 
 @media (min-width: 1600px) {
