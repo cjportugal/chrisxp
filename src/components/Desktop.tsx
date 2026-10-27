@@ -1,20 +1,11 @@
-import type { AppType } from '../apps/registry';
-import { getAppDefinition } from '../apps/registry';
+import { dockAppIds, getAppDefinition } from '../apps/registry';
+import { glyphToSvgDataUrl } from '../theme/glyphs';
 import Winamp from '../apps/Winamp';
 import { useWindowStore } from '../store/windowStore';
 import DesktopIcon from './DesktopIcon';
 import Taskbar from './Taskbar';
 import Wallpaper from './Wallpaper';
 import Window from './Window';
-
-type DesktopOrderItem = AppType | 'recycle-bin';
-
-const DESKTOP_ICON_ORDER: DesktopOrderItem[] = [
-  'terminal',
-  'recycle-bin',
-  'winamp',
-  'diablo',
-];
 
 interface DesktopIconItem {
   key: string;
@@ -28,21 +19,12 @@ export default function Desktop() {
   const { windows, winampOpen, openWindow } = useWindowStore();
   const desktopIconItems: DesktopIconItem[] = [];
 
-  for (const item of DESKTOP_ICON_ORDER) {
-    if (item === 'recycle-bin') {
-      desktopIconItems.push({ key: item, label: 'Recycle Bin', img: `${import.meta.env.BASE_URL}icon-recycle-bin.png` });
-      continue;
-    }
-
-    const appDefinition = getAppDefinition(item);
-    if (!appDefinition.desktopIcon) {
-      continue;
-    }
-
+  for (const appId of dockAppIds) {
+    const appDefinition = getAppDefinition(appId);
     desktopIconItems.push({
       key: appDefinition.id,
-      label: appDefinition.desktopIcon.label,
-      img: appDefinition.desktopIcon.img,
+      label: appDefinition.title,
+      img: glyphToSvgDataUrl(appDefinition.icon),
       onClick: () => openWindow(appDefinition.id),
     });
   }

@@ -1,9 +1,13 @@
 import type { ComponentType } from 'react';
-import Terminal from './Terminal';
-import Winamp from './Winamp';
+import { GLYPHS } from '../theme/glyphs';
+import type { PixelGlyph } from '../theme/glyphs';
+import About from './About';
 import Diablo from './Diablo';
+import Photos from './Photos';
+import Trash from './Trash';
+import Winamp from './Winamp';
 
-export type AppType = 'terminal' | 'winamp' | 'diablo';
+export type AppType = 'winamp' | 'diablo' | 'photos' | 'about' | 'trash';
 
 export interface AppDefinition {
   id: AppType;
@@ -11,33 +15,36 @@ export interface AppDefinition {
   defaultWidth: number;
   defaultHeight: number;
   Component: ComponentType;
-  desktopIcon: {
-    label: string;
-    img: string;
-  } | null;
-  startMenuItem: {
-    label: string;
-    icon: string;
-    showArrow: boolean;
-  } | null;
+  icon: PixelGlyph;
+  /** Shown in the dock. */
+  dock: boolean;
+  /** Opening again focuses the existing window instead of making another. */
+  singleInstance: boolean;
+  resizable: boolean;
 }
 
 export const appDefinitions: Record<AppType, AppDefinition> = {
-  terminal: {
-    id: 'terminal',
-    title: 'Command Prompt',
-    defaultWidth: 600,
-    defaultHeight: 400,
-    Component: Terminal,
-    desktopIcon: {
-      label: 'My Computer',
-      img: `${import.meta.env.BASE_URL}icon-my-computer.png`,
-    },
-    startMenuItem: {
-      label: 'Command Prompt',
-      icon: `${import.meta.env.BASE_URL}icon-my-computer.png`,
-      showArrow: true,
-    },
+  about: {
+    id: 'about',
+    title: 'About ChrisXP',
+    defaultWidth: 380,
+    defaultHeight: 260,
+    Component: About,
+    icon: GLYPHS.about,
+    dock: true,
+    singleInstance: true,
+    resizable: false,
+  },
+  photos: {
+    id: 'photos',
+    title: 'Photos',
+    defaultWidth: 560,
+    defaultHeight: 420,
+    Component: Photos,
+    icon: GLYPHS.photos,
+    dock: true,
+    singleInstance: true,
+    resizable: true,
   },
   winamp: {
     id: 'winamp',
@@ -45,15 +52,10 @@ export const appDefinitions: Record<AppType, AppDefinition> = {
     defaultWidth: 275,
     defaultHeight: 500,
     Component: Winamp,
-    desktopIcon: {
-      label: 'Winamp',
-      img: `${import.meta.env.BASE_URL}icon-winamp.png`,
-    },
-    startMenuItem: {
-      label: 'Winamp',
-      icon: `${import.meta.env.BASE_URL}icon-winamp.png`,
-      showArrow: true,
-    },
+    icon: GLYPHS.winamp,
+    dock: true,
+    singleInstance: true,
+    resizable: false,
   },
   diablo: {
     id: 'diablo',
@@ -61,19 +63,28 @@ export const appDefinitions: Record<AppType, AppDefinition> = {
     defaultWidth: 800,
     defaultHeight: 600,
     Component: Diablo,
-    desktopIcon: {
-      label: 'Diablo',
-      img: `${import.meta.env.BASE_URL}icon-diablo.png`,
-    },
-    startMenuItem: {
-      label: 'Diablo',
-      icon: `${import.meta.env.BASE_URL}icon-diablo.png`,
-      showArrow: true,
-    },
+    icon: GLYPHS.diablo,
+    dock: true,
+    singleInstance: true,
+    resizable: true,
+  },
+  trash: {
+    id: 'trash',
+    title: 'Trash',
+    defaultWidth: 320,
+    defaultHeight: 200,
+    Component: Trash,
+    icon: GLYPHS.trash,
+    dock: true,
+    singleInstance: true,
+    resizable: false,
   },
 };
 
+/** Registry order is dock order. */
 export const appIds = Object.keys(appDefinitions) as AppType[];
+
+export const dockAppIds = appIds.filter((id) => appDefinitions[id].dock);
 
 export function getAppDefinition(appId: AppType): AppDefinition {
   return appDefinitions[appId];

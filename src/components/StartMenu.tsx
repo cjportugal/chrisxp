@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { AppType } from '../apps/registry';
-import { appIds, getAppDefinition } from '../apps/registry';
+import { dockAppIds, getAppDefinition } from '../apps/registry';
+import { glyphToSvgDataUrl } from '../theme/glyphs';
 import { useWindowStore } from '../store/windowStore';
 
 interface Props {
@@ -14,20 +15,9 @@ interface StartMenuEntry {
   showArrow: boolean;
 }
 
-const START_MENU_ITEMS: StartMenuEntry[] = appIds.flatMap((appId) => {
+const START_MENU_ITEMS: StartMenuEntry[] = dockAppIds.map((appId) => {
   const appDefinition = getAppDefinition(appId);
-  if (!appDefinition.startMenuItem) {
-    return [];
-  }
-
-  return [
-    {
-      appId,
-      label: appDefinition.startMenuItem.label,
-      icon: appDefinition.startMenuItem.icon,
-      showArrow: appDefinition.startMenuItem.showArrow,
-    },
-  ];
+  return { appId, label: appDefinition.title, icon: glyphToSvgDataUrl(appDefinition.icon), showArrow: false };
 });
 
 export default function StartMenu({ onClose }: Props) {
