@@ -100,7 +100,6 @@ function DockItem({ label, running, shakeToken, onClick, children }: DockItemPro
         key={shakeToken}
         className="cx-dock__icon"
         data-shaking={shakeToken > 0 ? 'true' : 'false'}
-        style={{ width: size, height: size }}
       >
         {children(size)}
       </span>
