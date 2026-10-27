@@ -199,3 +199,248 @@
 .cx-window__body::-webkit-scrollbar-corner {
   background: var(--cx-paper);
 }
+
+/* ---- Desktop layout ----------------------------------------------------------------------- */
+
+.cx-desktop {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.cx-desktop__foreground {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+}
+
+/* Own stacking context: window z-indexes climb forever but never pass the menubar or dock. */
+.cx-windows-layer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  isolation: isolate;
+}
+
+/* ---- Menubar ------------------------------------------------------------------------------ */
+
+.cx-menubar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: stretch;
+  padding: 0 6px;
+  background: var(--cx-paper);
+  border-bottom: 1px solid var(--cx-ink);
+}
+
+.cx-menu {
+  position: relative;
+  display: flex;
+}
+
+.cx-menu__title {
+  display: flex;
+  align-items: center;
+  padding: 0 9px;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.cx-menu[data-open='true'] > .cx-menu__title {
+  background: var(--cx-ink);
+  color: var(--cx-paper);
+}
+
+.cx-menu[data-open='true'] > .cx-menu__title img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.cx-menu__list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 160px;
+  padding: 2px 0;
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+  box-shadow: var(--cx-shadow);
+  z-index: 4;
+}
+
+.cx-menu__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 14px 0 4px;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.cx-menu__item:hover {
+  background: var(--cx-ink);
+  color: var(--cx-paper);
+}
+
+.cx-menu__item[aria-disabled='true'] {
+  color: transparent;
+  /* Dimmed label via a dither mask, like System 1 disabled items. */
+  background: none;
+}
+
+.cx-menu__item[aria-disabled='true']:hover {
+  background: none;
+}
+
+.cx-menu__item[aria-disabled='true'] .cx-menu__label {
+  color: var(--cx-ink);
+  opacity: 0.45;
+}
+
+.cx-menu__check {
+  display: inline-block;
+  width: 14px;
+  text-align: center;
+}
+
+.cx-menu__arrow {
+  margin-left: auto;
+  padding-left: 16px;
+  font-size: 9px;
+}
+
+.cx-menu__separator {
+  height: 0;
+  margin: 3px 0;
+  border-top: 1px dotted var(--cx-ink);
+}
+
+.cx-menu__submenu {
+  position: absolute;
+  top: -3px;
+  left: 100%;
+  color: var(--cx-ink);
+}
+
+.cx-menu__submenu .cx-menu__list {
+  position: static;
+}
+
+.cx-menubar__clock {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+/* ---- Dock --------------------------------------------------------------------------------- */
+
+.cx-dock-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.cx-dock {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 6px 10px 14px;
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+  box-shadow: var(--cx-shadow);
+  pointer-events: auto;
+}
+
+/* Dither strip along the bottom edge of the tray. */
+.cx-dock::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  border-top: 1px solid var(--cx-ink);
+  background: var(--cx-dither);
+}
+
+.cx-dock__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 56px;
+  cursor: default;
+  outline: none;
+}
+
+.cx-dock__icon {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  /* No transition: the icon jumps between its two sizes. */
+}
+
+.cx-dock__item:active .cx-dock__icon img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.cx-dock__dot {
+  width: 4px;
+  height: 4px;
+  margin-top: 3px;
+  background: var(--cx-ink);
+  visibility: hidden;
+}
+
+.cx-dock__item[data-running='true'] .cx-dock__dot {
+  visibility: visible;
+}
+
+.cx-dock__tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 6px 2px;
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+  box-shadow: var(--cx-shadow);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.cx-dock__separator {
+  align-self: stretch;
+  width: 0;
+  margin: 4px 4px 7px;
+  border-left: 1px dotted var(--cx-ink);
+}
+
+@keyframes cx-jiggle {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-3px) rotate(-6deg); }
+  40% { transform: translateX(3px) rotate(6deg); }
+  60% { transform: translateX(-3px) rotate(-4deg); }
+  80% { transform: translateX(3px) rotate(4deg); }
+}
+
+.cx-dock__icon[data-shaking='true'] {
+  animation: cx-jiggle 300ms steps(5) 1;
+}

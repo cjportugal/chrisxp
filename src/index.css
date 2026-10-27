@@ -666,20 +666,6 @@ body.webamp-milkdrop-desktop .webamp-desktop {
   margin: 3px 2px;
 }
 
-.start-btn:active {
-  box-shadow: inset -1px -1px 0 0 white, inset 1px 1px 0 0 #0a0a0a, inset -2px -2px 0 0 #dfdfdf,
-    inset 2px 2px 0 0 #808080 !important;
-}
-
-.start-menu-item:hover {
-  background: #000a71;
-}
-
-.start-menu-item:hover .start-menu-label,
-.start-menu-item:hover .start-menu-arrow {
-  color: #ffffff !important;
-}
-
 .desktop-stage {
   position: relative;
   z-index: 0;

@@ -22,6 +22,7 @@ interface WindowStore {
   openWindow: (app: AppType) => void;
   closeWinamp: () => void;
   closeWindow: (id: string) => void;
+  closeAll: () => void;
   minimizeWindow: (id: string) => void;
   maximizeWindow: (id: string) => void;
   focusWindow: (id: string) => void;
@@ -99,6 +100,8 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
 
   closeWindow: (id) =>
     set((state) => ({ windows: state.windows.filter((windowState) => windowState.id !== id) })),
+
+  closeAll: () => set({ windows: [] }),
 
   minimizeWindow: (id) =>
     set((state) => ({
