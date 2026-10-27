@@ -474,11 +474,11 @@
   padding: 10px 12px 8px;
 }
 
-/* Perfect DOS VGA advances 1.125em per cell and wants a 2em line to keep its 9:16 cell, so 4px/8px. */
+/* Perfect DOS VGA has a 9:16 cell at line-height 1 (0.5625em advance), so 74 columns at 8px span 333px. */
 .cx-about__art {
   margin: 0;
-  font-size: 4px;
-  line-height: 8px;
+  font-size: 8px;
+  line-height: 1;
   letter-spacing: 0;
   white-space: pre;
   overflow: hidden;

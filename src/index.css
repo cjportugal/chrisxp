@@ -2,7 +2,7 @@
 
 @font-face {
   font-family: 'Perfect DOS VGA 437 Win';
-  src: url('./assets/fonts/PerfectDOSVGA437Win.ttf') format('truetype');
+  src: url('./assets/fonts/PerfectDOSVGA437Win.woff2') format('woff2');
   font-style: normal;
   font-weight: 400;
   font-display: swap;
