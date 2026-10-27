@@ -428,6 +428,7 @@
 
 .cx-dock__tooltip {
   position: absolute;
+  z-index: 1;
   bottom: calc(100% + 8px);
   left: 50%;
   transform: translateX(-50%);

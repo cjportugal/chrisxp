@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import art from '../chrisxp-art/chrisxp-80.txt?raw';
 
-// Trim the blank rows and the common left margin so the art fills the box edge to edge.
-const RAW_LINES = art.replace(/\s+$/, '').split('\n');
+// Trim the blank rows above and below and the common left margin so the art fills the box edge to edge.
+const RAW_LINES = art.replace(/^(?:[ \t]*\n)+/, '').replace(/\s+$/, '').split('\n');
 const INDENT = Math.min(...RAW_LINES.filter((line) => line.trim()).map((line) => line.length - line.trimStart().length));
 const ART_LINES = RAW_LINES.map((line) => line.slice(INDENT).trimEnd());
 
