@@ -1,4 +1,4 @@
-@import 'xp.css';
+@import './theme/theme.css';
 
 @font-face {
   font-family: 'Perfect DOS VGA 437 Win';
@@ -608,42 +608,6 @@ body.webamp-milkdrop-desktop .webamp-desktop {
   display: block !important;
 }
 
-/* Prevent XP.css .title-bar styles from affecting Webamp's title bars. */
-#webamp .title-bar {
-  padding: 0;
-  display: block;
-  justify-content: initial;
-  align-items: initial;
-}
-
-/* Prevent XP.css from leaking generic window/button rules into Webamp internals. */
-#webamp .window {
-  box-shadow: none;
-  background: transparent;
-  padding: 0;
-  pointer-events: auto;
-}
-
-#webamp button {
-  min-width: 0;
-  min-height: 0;
-  padding: 0;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
-
-#webamp .window,
-#webamp .window * {
-  outline: none;
-}
-
-/* Prevent xp.css border-radius from leaking into Webamp elements. */
-#webamp * {
-  border-radius: 0 !important;
-}
-
 /* Prevent xp.css global scrollbar styles from bleeding into Webamp windows. */
 #webamp::-webkit-scrollbar,
 #webamp ::-webkit-scrollbar,
@@ -659,43 +623,6 @@ body.webamp-milkdrop-desktop .webamp-desktop {
 #webamp-mount-host,
 .webamp-instance-host {
   scrollbar-width: none;
-}
-
-/* Reset xp.css range input overrides inside Webamp.
-   Only use !important on transform/box-shadow so Webamp's own more-specific
-   rules (#webamp #volume input::...) can still override size and background. */
-#webamp input[type=range] {
-  width: auto;
-  height: auto;
-  margin: 0;
-  transform: none !important;
-  background: transparent;
-}
-#webamp input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  transform: none !important;
-  background: none;
-  height: auto;
-  width: auto;
-}
-#webamp input[type=range]::-webkit-slider-runnable-track {
-  background: none;
-  box-shadow: none !important;
-  height: auto;
-  border: none;
-  border-radius: 0;
-}
-#webamp input[type=range]::-moz-range-thumb {
-  transform: none !important;
-  background: none;
-  height: auto;
-  width: auto;
-}
-#webamp input[type=range]::-moz-range-track {
-  background: none;
-  box-shadow: none !important;
-  height: auto;
-  border: none;
 }
 
 /* Milkdrop desktop custom context menu */

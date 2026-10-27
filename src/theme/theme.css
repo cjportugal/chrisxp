@@ -1,0 +1,79 @@
+/* ChrisXP desktop theme: Mac System 1 chrome, Windows 3.1 accents, soft-club wallpaper.
+   Everything here is prefixed cx- so nothing leaks into Webamp (#webamp mounts at body level). */
+
+@font-face {
+  font-family: 'ChicagoFLF';
+  src: url('../assets/fonts/ChicagoFLF.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+}
+
+:root {
+  --cx-ink: #101010;
+  --cx-paper: #f2f1ea;
+  --cx-dither: repeating-conic-gradient(var(--cx-ink) 0 25%, var(--cx-paper) 0 50%) 0 0 / 4px 4px;
+
+  --cx-cyan: #3fc1ff;
+  --cx-blue: #1b45c9;
+  --cx-magenta: #ff4fd8;
+  --cx-yellow: #ffe24a;
+  --cx-orange: #ff7b3a;
+
+  --cx-shadow: 2px 2px 0 var(--cx-ink);
+
+  --cx-font-ui: 'ChicagoFLF', 'Perfect DOS VGA 437 Win', monospace;
+  --cx-font-mono: 'Perfect DOS VGA 437 Win', monospace;
+  --cx-font-size: 12px;
+}
+
+.cx-ui {
+  font-family: var(--cx-font-ui);
+  font-size: var(--cx-font-size);
+  line-height: 1;
+  color: var(--cx-ink);
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  user-select: none;
+}
+
+.cx-mono {
+  font-family: var(--cx-font-mono);
+  -webkit-font-smoothing: none;
+}
+
+.cx-pixel {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.cx-dither {
+  background: var(--cx-dither);
+}
+
+/* 1-bit push button: paper face, ink border, hard shadow; inverts while pressed. */
+.cx-button {
+  font-family: var(--cx-font-ui);
+  font-size: var(--cx-font-size);
+  line-height: 1;
+  -webkit-font-smoothing: none;
+  color: var(--cx-ink);
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+  box-shadow: var(--cx-shadow);
+  padding: 4px 10px 3px;
+  cursor: default;
+  user-select: none;
+}
+
+.cx-button:active,
+.cx-button[aria-pressed='true'] {
+  background: var(--cx-ink);
+  color: var(--cx-paper);
+}
+
+.cx-button:disabled {
+  color: var(--cx-paper);
+  background: var(--cx-dither);
+  box-shadow: none;
+}
