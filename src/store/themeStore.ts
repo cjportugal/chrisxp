@@ -40,39 +40,43 @@ interface ThemeStore {
   setPattern: (pattern: WallpaperPattern) => void;
 }
 
-export const useThemeStore = create<ThemeStore>((set, get) => ({
+export const useThemeStore = create<ThemeStore>((set) => ({
   wallpaperId: DEFAULT_WALLPAPER_ID,
   wallpaperDataUrl: null,
   glassDataUrl: null,
-  pattern: 'photo',
+  pattern: 'gray',
 
   setWallpaper: async (id) => {
-    const source = getWallpaper(id);
-    if (!source) return;
-    set({ wallpaperId: id, pattern: 'photo' });
-    const [dataUrl, glassDataUrl] = await Promise.all([
-      ditherUrlToDataUrl(source.url),
-      ditherUrlToDataUrl(source.url, { palette: GLASS_PALETTE }),
-    ]);
-    await Promise.all([warmImage(dataUrl), warmImage(glassDataUrl)]);
-    // A later pick wins; do not clobber it with a slower earlier dither.
-    if (get().wallpaperId === id) set({ wallpaperDataUrl: dataUrl, glassDataUrl });
+    if (!getWallpaper(id)) return;
+    set({ pattern: 'photo' });
+    await loadWallpaper(id);
   },
 
   setPattern: (pattern) => set({ pattern }),
 }));
 
+/** Dither a wallpaper and make it current without switching the pattern to it. */
+async function loadWallpaper(id: string): Promise<void> {
+  const source = getWallpaper(id);
+  if (!source) return;
+  useThemeStore.setState({ wallpaperId: id });
+  const [dataUrl, glassDataUrl] = await Promise.all([
+    ditherUrlToDataUrl(source.url),
+    ditherUrlToDataUrl(source.url, { palette: GLASS_PALETTE }),
+  ]);
+  await Promise.all([warmImage(dataUrl), warmImage(glassDataUrl)]);
+  // A later pick wins; do not clobber it with a slower earlier dither.
+  if (useThemeStore.getState().wallpaperId === id) useThemeStore.setState({ wallpaperDataUrl: dataUrl, glassDataUrl });
+}
+
 let prepared: Promise<void> | null = null;
 
-/** Dither the default wallpaper ahead of time. Call during boot so the desktop mounts with it ready. */
+/** Dither the default photo wallpaper ahead of time, so picking Photo is instant. The desktop starts on gray. */
 export function prepareWallpaper(): Promise<void> {
   if (!prepared) {
-    prepared = useThemeStore
-      .getState()
-      .setWallpaper(useThemeStore.getState().wallpaperId)
-      .catch((error: unknown) => {
-        console.error('Wallpaper dither failed', error);
-      });
+    prepared = loadWallpaper(useThemeStore.getState().wallpaperId).catch((error: unknown) => {
+      console.error('Wallpaper dither failed', error);
+    });
   }
   return prepared;
 }

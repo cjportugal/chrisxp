@@ -185,7 +185,7 @@ export default function Dock() {
           data-active={sizes.some((size) => size > ICON_SIZE) ? 'true' : 'false'}
           style={{ height: ICON_SIZE_MAX - ICON_SLOT + 8 }}
         />
-        <div className="cx-dock__glass" data-pattern={glassDataUrl ? pattern : 'flat'} aria-hidden="true" />
+        <div className="cx-dock__glass" data-pattern={pattern === 'photo' && !glassDataUrl ? 'flat' : pattern} aria-hidden="true" />
         {mainApps.map(renderItem)}
         <div className="cx-dock__separator" />
         {renderItem('trash', mainApps.length)}

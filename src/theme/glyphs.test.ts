@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { GLYPHS, glyphSize } from './glyphs';
 
-const LEGEND = /^[.#ocmyb]+$/;
+const LEGEND = /^[.#ocmybwsgnBtaGlRrpfOY]+$/;
 
 describe('GLYPHS', () => {
   it.each(Object.entries(GLYPHS))('%s is a rectangle drawn only from the legend', (_name, glyph) => {
@@ -21,12 +21,15 @@ describe('GLYPHS', () => {
     }
   );
 
-  it.each(['winamp', 'diablo', 'photos', 'about', 'trash', 'trashFull', 'folder'] as const)(
-    '%s is a 32x32 1-bit icon: ink, paper and transparency only',
+  it.each(['winamp', 'diablo', 'photos', 'about', 'trash', 'trashFull', 'folder'] as const)('%s is a 32x32 icon', (name) => {
+    expect(glyphSize(GLYPHS[name])).toEqual({ width: 32, height: 32 });
+  });
+
+  it.each(['winamp', 'diablo', 'photos', 'about', 'trash', 'trashFull'] as const)(
+    '%s is a Win95 icon: drawn in the 16-color palette rather than 1-bit paper',
     (name) => {
-      const glyph = GLYPHS[name];
-      expect(glyphSize(glyph)).toEqual({ width: 32, height: 32 });
-      expect(glyph.join('')).toMatch(/^[.#o]+$/);
+      expect(GLYPHS[name].join('')).toMatch(/^[.#cmybwsgnBtaGlRrpfOY]+$/);
+      expect(GLYPHS[name].join('')).toMatch(/[wsgnBtaGlRrpfOY]/);
     }
   );
 });
