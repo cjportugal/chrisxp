@@ -22,6 +22,7 @@ interface WindowStore {
   openWindow: (app: AppType) => void;
   closeWinamp: () => void;
   closeWindow: (id: string) => void;
+  closeAll: () => void;
   minimizeWindow: (id: string) => void;
   maximizeWindow: (id: string) => void;
   focusWindow: (id: string) => void;
@@ -31,7 +32,7 @@ interface WindowStore {
 }
 
 const WINDOW_BASE_X = 100;
-const WINDOW_BASE_Y = 80;
+const WINDOW_BASE_Y = 40;
 const WINDOW_CASCADE_STEP = 30;
 
 let idCounter = 0;
@@ -41,6 +42,18 @@ const mapWindowById = (
   id: string,
   mapFn: (windowState: WindowState) => WindowState
 ): WindowState[] => windows.map((windowState) => (windowState.id === id ? mapFn(windowState) : windowState));
+
+/** Id of the frontmost non-minimized window, or null when the desktop is bare. */
+export function selectActiveWindowId(state: { windows: WindowState[] }): string | null {
+  let active: WindowState | null = null;
+  for (const windowState of state.windows) {
+    if (windowState.minimized) continue;
+    if (!active || windowState.zIndex > active.zIndex) active = windowState;
+  }
+  return active?.id ?? null;
+}
+
+export const useActiveWindowId = () => useWindowStore(selectActiveWindowId);
 
 export const useWindowStore = create<WindowStore>((set, get) => ({
   windows: [],
@@ -53,9 +66,19 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
       return;
     }
 
-    const { topZ, windows } = get();
+    const { topZ, windows, focusWindow, restoreWindow } = get();
     const appDefinition = getAppDefinition(app);
-    const offset = windows.length * WINDOW_CASCADE_STEP;
+
+    if (appDefinition.singleInstance) {
+      const existing = windows.find((windowState) => windowState.app === app);
+      if (existing) {
+        if (existing.minimized) restoreWindow(existing.id);
+        focusWindow(existing.id);
+        return;
+      }
+    }
+
+    const offset = (windows.length % 8) * WINDOW_CASCADE_STEP;
 
     const newWindow: WindowState = {
       id: `window-${++idCounter}`,
@@ -77,6 +100,8 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
 
   closeWindow: (id) =>
     set((state) => ({ windows: state.windows.filter((windowState) => windowState.id !== id) })),
+
+  closeAll: () => set({ windows: [] }),
 
   minimizeWindow: (id) =>
     set((state) => ({

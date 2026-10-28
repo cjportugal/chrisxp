@@ -1,0 +1,678 @@
+/* ChrisXP desktop theme: Mac System 1 chrome, Windows 3.1 accents, soft-club wallpaper.
+   Everything here is prefixed cx- so nothing leaks into Webamp (#webamp mounts at body level). */
+
+@font-face {
+  font-family: 'ChicagoFLF';
+  src: url('../assets/fonts/ChicagoFLF.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+}
+
+:root {
+  --cx-ink: #101010;
+  --cx-paper: #f2f1ea;
+  /* 50% checker with 2px cells. A full `background` value, so use it with the shorthand, not background-image. */
+  --cx-dither: repeating-conic-gradient(var(--cx-ink) 0 25%, var(--cx-paper) 0 50%) 0 0 / 4px 4px;
+
+  --cx-cyan: #3fc1ff;
+  --cx-blue: #1b45c9;
+  --cx-magenta: #ff4fd8;
+  --cx-yellow: #ffe24a;
+  --cx-orange: #ff7b3a;
+
+  --cx-shadow: 2px 2px 0 var(--cx-ink);
+
+  --cx-font-ui: 'ChicagoFLF', 'Perfect DOS VGA 437 Win', monospace;
+  --cx-font-mono: 'Perfect DOS VGA 437 Win', monospace;
+  --cx-font-size: 12px;
+}
+
+.cx-ui {
+  font-family: var(--cx-font-ui);
+  font-size: var(--cx-font-size);
+  line-height: 1;
+  color: var(--cx-ink);
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  user-select: none;
+}
+
+.cx-mono {
+  font-family: var(--cx-font-mono);
+  -webkit-font-smoothing: none;
+}
+
+.cx-pixel {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.cx-dither {
+  background: var(--cx-dither);
+}
+
+/* 1-bit push button: paper face, ink border, hard shadow; inverts while pressed. */
+.cx-button {
+  font-family: var(--cx-font-ui);
+  font-size: var(--cx-font-size);
+  line-height: 1;
+  -webkit-font-smoothing: none;
+  color: var(--cx-ink);
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+  box-shadow: var(--cx-shadow);
+  padding: 4px 10px 3px;
+  cursor: default;
+  user-select: none;
+}
+
+.cx-button:active,
+.cx-button[aria-pressed='true'] {
+  background: var(--cx-ink);
+  color: var(--cx-paper);
+}
+
+.cx-button:disabled {
+  color: var(--cx-paper);
+  background: var(--cx-dither);
+  box-shadow: none;
+}
+
+/* ---- Window frame ------------------------------------------------------------------------- */
+
+.cx-window {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+  box-shadow: var(--cx-shadow);
+  overflow: visible;
+}
+
+.cx-titlebar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 20px;
+  padding: 0 3px;
+  gap: 3px;
+  background: var(--cx-paper);
+  border-bottom: 1px solid var(--cx-ink);
+  cursor: move;
+}
+
+/* System 1: six 1px pinstripes behind the title when the window is frontmost. */
+.cx-window[data-active='true'] .cx-titlebar {
+  background:
+    repeating-linear-gradient(to bottom, var(--cx-ink) 0 1px, transparent 1px 2px) 0 4px / 100% 11px no-repeat,
+    var(--cx-paper);
+}
+
+.cx-titlebar__center {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+
+/* The label is only as wide as its text, so the stripes show on either side of it. */
+.cx-titlebar__title {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 3px 6px 2px;
+  background: var(--cx-paper);
+}
+
+.cx-window[data-active='false'] .cx-titlebar__title {
+  color: var(--cx-ink);
+  opacity: 0.55;
+}
+
+.cx-titlebar__controls {
+  display: flex;
+  gap: 3px;
+}
+
+.cx-window button.cx-titlebar__box {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  height: 19px;
+  padding: 0 2px;
+  margin: 0;
+  border: 0;
+  background: var(--cx-paper);
+  cursor: default;
+}
+
+.cx-window button.cx-titlebar__box:active img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.cx-window[data-active='false'] .cx-titlebar__box--close,
+.cx-window[data-active='false'] .cx-titlebar__controls {
+  visibility: hidden;
+}
+
+.cx-window__body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  background: var(--cx-paper);
+  color: var(--cx-ink);
+}
+
+.cx-window__grip {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+/* 1-bit scrollbars, scoped to our windows so Webamp keeps its own. */
+.cx-window__body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--cx-ink) var(--cx-paper);
+}
+
+.cx-window__body *::-webkit-scrollbar,
+.cx-window__body::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+.cx-window__body *::-webkit-scrollbar-track,
+.cx-window__body::-webkit-scrollbar-track {
+  background: var(--cx-dither);
+  border-left: 1px solid var(--cx-ink);
+}
+
+.cx-window__body *::-webkit-scrollbar-thumb,
+.cx-window__body::-webkit-scrollbar-thumb {
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+}
+
+.cx-window__body *::-webkit-scrollbar-corner,
+.cx-window__body::-webkit-scrollbar-corner {
+  background: var(--cx-paper);
+}
+
+/* ---- Desktop layout ----------------------------------------------------------------------- */
+
+.cx-desktop {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.cx-desktop__foreground {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+}
+
+/* Own stacking context: window z-indexes climb forever but never pass the menubar or dock. */
+.cx-windows-layer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  isolation: isolate;
+}
+
+/* ---- Menubar ------------------------------------------------------------------------------ */
+
+.cx-menubar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  display: flex;
+  align-items: stretch;
+  padding: 0 6px;
+  background: var(--cx-paper);
+  border-bottom: 1px solid var(--cx-ink);
+}
+
+.cx-menu {
+  position: relative;
+  display: flex;
+}
+
+.cx-menu__title {
+  display: flex;
+  align-items: center;
+  padding: 0 9px;
+  cursor: default;
+  white-space: nowrap;
+}
+
+.cx-menu[data-open='true'] > .cx-menu__title {
+  background: var(--cx-ink);
+  color: var(--cx-paper);
+}
+
+.cx-menu[data-open='true'] > .cx-menu__title img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.cx-menu__list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 160px;
+  padding: 2px 0;
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+  box-shadow: var(--cx-shadow);
+  z-index: 4;
+}
+
+.cx-menu__item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 14px 0 4px;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.cx-menu__item:hover {
+  background: var(--cx-ink);
+  color: var(--cx-paper);
+}
+
+.cx-menu__item[aria-disabled='true'] {
+  color: transparent;
+  /* Dimmed label via a dither mask, like System 1 disabled items. */
+  background: none;
+}
+
+.cx-menu__item[aria-disabled='true']:hover {
+  background: none;
+}
+
+.cx-menu__item[aria-disabled='true'] .cx-menu__label {
+  color: var(--cx-ink);
+  opacity: 0.45;
+}
+
+.cx-menu__check {
+  display: inline-block;
+  width: 14px;
+  text-align: center;
+}
+
+.cx-menu__arrow {
+  margin-left: auto;
+  padding-left: 16px;
+  font-size: 9px;
+}
+
+.cx-menu__separator {
+  height: 0;
+  margin: 3px 0;
+  border-top: 1px dotted var(--cx-ink);
+}
+
+.cx-menu__submenu {
+  position: absolute;
+  top: -3px;
+  left: 100%;
+  color: var(--cx-ink);
+}
+
+.cx-menu__submenu .cx-menu__list {
+  position: static;
+}
+
+.cx-menubar__clock {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding: 0 4px;
+  white-space: nowrap;
+}
+
+/* ---- Dock --------------------------------------------------------------------------------- */
+
+.cx-dock-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.cx-dock {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 6px 10px 14px;
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+  box-shadow: var(--cx-shadow);
+  pointer-events: auto;
+}
+
+/* Dither strip along the bottom edge of the tray. */
+.cx-dock::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 6px;
+  border-top: 1px solid var(--cx-ink);
+  background: var(--cx-dither);
+}
+
+.cx-dock__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 56px;
+  cursor: default;
+  outline: none;
+}
+
+.cx-dock__icon {
+  position: relative;
+  display: block;
+  width: 48px;
+  height: 48px;
+}
+
+/* The hovered icon jumps to 64px and overflows the slot upward; the tray itself never moves. */
+.cx-dock__icon img {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+}
+
+.cx-dock__item:active .cx-dock__icon img {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.cx-dock__dot {
+  width: 4px;
+  height: 4px;
+  margin-top: 3px;
+  background: var(--cx-ink);
+  visibility: hidden;
+}
+
+.cx-dock__item[data-running='true'] .cx-dock__dot {
+  visibility: visible;
+}
+
+.cx-dock__tooltip {
+  position: absolute;
+  z-index: 1;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 3px 6px 2px;
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+  box-shadow: var(--cx-shadow);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.cx-dock__separator {
+  align-self: stretch;
+  width: 0;
+  margin: 4px 4px 7px;
+  border-left: 1px dotted var(--cx-ink);
+}
+
+@keyframes cx-jiggle {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  20% { transform: translateX(-3px) rotate(-6deg); }
+  40% { transform: translateX(3px) rotate(6deg); }
+  60% { transform: translateX(-3px) rotate(-4deg); }
+  80% { transform: translateX(3px) rotate(4deg); }
+}
+
+.cx-dock__icon[data-shaking='true'],
+.cx-trash__icon[data-shaking='true'] {
+  animation: cx-jiggle 300ms steps(5) 1;
+}
+
+.cx-trash__icon {
+  display: block;
+}
+
+/* ---- About ChrisXP ------------------------------------------------------------------------ */
+
+.cx-about {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding: 10px 12px 8px;
+}
+
+/* Perfect DOS VGA has a 9:16 cell at line-height 1 (0.5625em advance), so 74 columns at 8px span 333px. */
+.cx-about__art {
+  margin: 0;
+  font-size: 8px;
+  line-height: 1;
+  letter-spacing: 0;
+  white-space: pre;
+  overflow: hidden;
+  color: var(--cx-ink);
+}
+
+.cx-about__title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cx-about__name {
+  font-size: 18px;
+}
+
+.cx-about__rule {
+  border-top: 1px solid var(--cx-ink);
+}
+
+.cx-about__facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 10px;
+  margin: 0;
+}
+
+.cx-about__facts dd {
+  margin: 0;
+}
+
+.cx-about__footer {
+  margin-top: auto;
+  opacity: 0.6;
+}
+
+/* ---- Trash -------------------------------------------------------------------------------- */
+
+.cx-trash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  height: 100%;
+}
+
+.cx-trash button.cx-trash__can {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: default;
+}
+
+/* ---- Photos ------------------------------------------------------------------------------- */
+
+.cx-photos {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  outline: none;
+}
+
+.cx-photos__header {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 5px 8px 4px;
+  border-bottom: 1px solid var(--cx-ink);
+}
+
+.cx-photos__header-hint {
+  margin-left: auto;
+  opacity: 0.6;
+}
+
+.cx-photos__panes {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.cx-photos__grid {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 104px);
+  justify-content: start;
+  align-content: start;
+  gap: 8px;
+  padding: 10px;
+  overflow: auto;
+}
+
+.cx-photos__panes[data-viewer='true'] .cx-photos__grid {
+  flex: 0 0 40%;
+  border-right: 1px solid var(--cx-ink);
+}
+
+.cx-photos button.cx-photos__thumb {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 104px;
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: default;
+}
+
+.cx-photos__thumb-frame {
+  display: block;
+  width: 96px;
+  height: 96px;
+  border: 1px solid var(--cx-ink);
+  background: var(--cx-paper);
+  overflow: hidden;
+}
+
+.cx-photos__thumb-frame img,
+.cx-photos__thumb-frame span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cx-photos__thumb-name {
+  max-width: 100%;
+  padding: 1px 3px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cx-photos button.cx-photos__thumb[aria-pressed='true'] .cx-photos__thumb-frame {
+  box-shadow: var(--cx-shadow);
+}
+
+.cx-photos button.cx-photos__thumb[aria-pressed='true'] .cx-photos__thumb-name {
+  background: var(--cx-ink);
+  color: var(--cx-paper);
+}
+
+.cx-photos__viewer {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cx-photos__stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: var(--cx-dither);
+}
+
+.cx-photos__stage img {
+  max-width: 100%;
+  max-height: 100%;
+  border: 1px solid var(--cx-ink);
+  box-shadow: var(--cx-shadow);
+  background: var(--cx-paper);
+}
+
+.cx-photos__loading {
+  padding: 4px 8px;
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+}
+
+.cx-photos__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 8px 10px 10px;
+  border-top: 1px solid var(--cx-ink);
+}
+
+.cx-photos__caption {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

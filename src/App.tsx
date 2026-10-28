@@ -1,14 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AsciiBootTransition from './components/AsciiBootTransition';
 import BootSequence from './components/BootSequence';
 import ChrisXPLoadingScreen from './components/ChrisXPLoadingScreen';
 import Desktop from './components/Desktop';
 import DesktopReveal from './components/DesktopReveal';
+import { prepareWallpaper } from './store/themeStore';
 
 type BootPhase = 'bios' | 'transition' | 'readme' | 'desktop-reveal' | 'complete';
 
 function App() {
   const [bootPhase, setBootPhase] = useState<BootPhase>('bios');
+
+  // The boot runs for several seconds; dither the wallpaper now so the reveal has real colors to sample.
+  useEffect(() => { void prepareWallpaper(); }, []);
 
   return <>
     {(bootPhase === 'desktop-reveal' || bootPhase === 'complete') && (
