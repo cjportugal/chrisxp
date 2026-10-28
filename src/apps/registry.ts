@@ -5,7 +5,6 @@ import About from './About';
 import Diablo from './Diablo';
 import Photos from './Photos';
 import Trash from './Trash';
-import Winamp from './Winamp';
 
 export type AppType = 'winamp' | 'diablo' | 'photos' | 'about' | 'trash';
 
@@ -22,6 +21,9 @@ export interface AppDefinition {
   singleInstance: boolean;
   resizable: boolean;
 }
+
+/** Winamp is the docked player column (PlayerPanel), special-cased in openWindow and never windowed. */
+const NoWindow: ComponentType = () => null;
 
 export const appDefinitions: Record<AppType, AppDefinition> = {
   about: {
@@ -51,7 +53,7 @@ export const appDefinitions: Record<AppType, AppDefinition> = {
     title: 'Winamp',
     defaultWidth: 275,
     defaultHeight: 500,
-    Component: Winamp,
+    Component: NoWindow,
     icon: GLYPHS.winamp,
     dock: true,
     singleInstance: true,

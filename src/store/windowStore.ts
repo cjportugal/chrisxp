@@ -21,6 +21,7 @@ interface WindowStore {
   winampOpen: boolean;
   openWindow: (app: AppType) => void;
   closeWinamp: () => void;
+  toggleWinamp: () => void;
   closeWindow: (id: string) => void;
   closeAll: () => void;
   minimizeWindow: (id: string) => void;
@@ -97,6 +98,8 @@ export const useWindowStore = create<WindowStore>((set, get) => ({
   },
 
   closeWinamp: () => set({ winampOpen: false }),
+
+  toggleWinamp: () => set((state) => ({ winampOpen: !state.winampOpen })),
 
   closeWindow: (id) =>
     set((state) => ({ windows: state.windows.filter((windowState) => windowState.id !== id) })),

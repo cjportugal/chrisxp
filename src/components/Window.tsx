@@ -3,7 +3,7 @@ import { appDefinitions } from '../apps/registry';
 import { useActiveWindowId, useWindowStore } from '../store/windowStore';
 import type { WindowState } from '../store/windowStore';
 import { GLYPHS } from '../theme/glyphs';
-import { DOCK_HEIGHT, MENUBAR_HEIGHT } from '../theme/layout';
+import { DOCK_HEIGHT, MENUBAR_HEIGHT, PLAYER_WIDTH } from '../theme/layout';
 import PixelIcon from './PixelIcon';
 
 interface Props {
@@ -22,14 +22,21 @@ export default function Window({ window: windowState }: Props) {
   const updatePosition = useWindowStore((state) => state.updatePosition);
   const updateSize = useWindowStore((state) => state.updateSize);
   const active = useActiveWindowId() === windowState.id;
+  const winampOpen = useWindowStore((state) => state.winampOpen);
 
   const definition = appDefinitions[windowState.app];
   const AppComponent = definition.Component;
   const resizable = definition.resizable && !windowState.maximized;
 
-  // The windows layer starts under the menubar, so a zoomed window fills from 0 to the dock.
+  // The windows layer starts under the menubar, so a zoomed window fills from 0 to the dock, and stops at
+  // the Winamp column when it is open.
   const frame = windowState.maximized
-    ? { x: 0, y: 0, width: globalThis.innerWidth, height: globalThis.innerHeight - MENUBAR_HEIGHT - DOCK_HEIGHT }
+    ? {
+        x: 0,
+        y: 0,
+        width: globalThis.innerWidth - (winampOpen ? PLAYER_WIDTH : 0),
+        height: globalThis.innerHeight - MENUBAR_HEIGHT - DOCK_HEIGHT,
+      }
     : { x: windowState.x, y: windowState.y, width: windowState.width, height: windowState.height };
 
   return (

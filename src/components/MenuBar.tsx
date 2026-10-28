@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { usePlayerStore } from '../store/playerStore';
 import { useThemeStore, WALLPAPERS } from '../store/themeStore';
 import type { WallpaperPattern } from '../store/themeStore';
 import { useTrashStore } from '../store/trashStore';
@@ -75,6 +76,11 @@ export default function MenuBar() {
   const setWallpaper = useThemeStore((state) => state.setWallpaper);
   const setPattern = useThemeStore((state) => state.setPattern);
   const shakeTrash = useTrashStore((state) => state.shake);
+  const winampOpen = useWindowStore((state) => state.winampOpen);
+  const toggleWinamp = useWindowStore((state) => state.toggleWinamp);
+  const playing = usePlayerStore((state) => state.status === 'playing');
+  const canStepPreset = usePlayerStore((state) => state.presetStepper !== null);
+  const player = usePlayerStore.getState();
 
   const restart = () => location.reload();
   const patternItem = (label: string, value: WallpaperPattern): MenuEntry => ({
@@ -113,6 +119,20 @@ export default function MenuBar() {
         patternItem('Photo', 'photo'),
         patternItem('Gray', 'gray'),
         patternItem('Flat', 'flat'),
+      ],
+    },
+    {
+      id: 'winamp',
+      label: 'Winamp',
+      items: [
+        { label: playing ? 'Pause' : 'Play', disabled: !winampOpen, action: () => void player.togglePlay() },
+        { label: 'Stop', disabled: !winampOpen, action: player.stop },
+        { label: 'Previous', disabled: !winampOpen, action: () => void player.prev() },
+        { label: 'Next', disabled: !winampOpen, action: () => void player.next() },
+        'separator',
+        { label: 'Next Preset', disabled: !canStepPreset, action: player.nextPreset },
+        'separator',
+        { label: 'Show Winamp', checked: winampOpen, action: toggleWinamp },
       ],
     },
     {

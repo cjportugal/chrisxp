@@ -10,7 +10,7 @@ export interface DitherOptions {
   strength?: number;
 }
 
-const BAYER4 = [
+export const BAYER4 = [
   [0, 8, 2, 10],
   [12, 4, 14, 6],
   [3, 11, 1, 9],
@@ -41,6 +41,37 @@ export const WALLPAPER_PALETTE: RGB[] = [
   [0x3f, 0xc1, 0xff], // cyan
   [0x1b, 0x45, 0xc9], // blue
 ];
+
+/** Milkdrop in the OS palette: the wallpaper colors plus magenta so the visualizer pops. */
+export const VIS_PALETTE: RGB[] = [
+  [0x10, 0x10, 0x10], // ink
+  [0xf2, 0xf1, 0xea], // paper
+  [0x3f, 0xc1, 0xff], // cyan
+  [0x1b, 0x45, 0xc9], // blue
+  [0xff, 0x4f, 0xd8], // magenta
+];
+
+/** The wallpaper as seen through the dock's frosted glass: no ink, so shadows fall to blue. */
+export const GLASS_PALETTE: RGB[] = [
+  [0xf2, 0xf1, 0xea], // paper
+  [0x3f, 0xc1, 0xff], // cyan
+  [0x1b, 0x45, 0xc9], // blue
+];
+
+/** An SVG data URL, `width` cells wide, where cell (x, y) is filled with `color` when its 4x4 Bayer
+ * threshold falls under `density(y)`. Tile it with image-rendering: pixelated for a 1-bit fade.
+ */
+export function bayerRampSvg(width: number, height: number, color: string, density: (y: number) => number): string {
+  const cells: string[] = [];
+  for (let y = 0; y < height; y++) {
+    const level = density(y);
+    for (let x = 0; x < width; x++) {
+      if ((BAYER4[y % 4][x % 4] + 0.5) / 16 < level) cells.push(`M${x} ${y}h1v1h-1z`);
+    }
+  }
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" shape-rendering="crispEdges"><path fill="${color}" d="${cells.join('')}"/></svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
 
 export function nearestColor(r: number, g: number, b: number, palette: readonly RGB[]): RGB {
   let best = palette[0];

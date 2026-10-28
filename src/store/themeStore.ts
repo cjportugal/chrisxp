@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { GLASS_PALETTE } from '../effects/dither';
 import { ditherUrlToDataUrl, warmImage } from '../effects/ditherImage';
 
 export type WallpaperPattern = 'photo' | 'gray' | 'flat';
@@ -32,6 +33,8 @@ export function getWallpaper(id: string): WallpaperSource | undefined {
 interface ThemeStore {
   wallpaperId: string;
   wallpaperDataUrl: string | null;
+  /** The same wallpaper re-dithered without ink, pixel-aligned with it, for the dock's fake glass. */
+  glassDataUrl: string | null;
   pattern: WallpaperPattern;
   setWallpaper: (id: string) => Promise<void>;
   setPattern: (pattern: WallpaperPattern) => void;
@@ -40,16 +43,20 @@ interface ThemeStore {
 export const useThemeStore = create<ThemeStore>((set, get) => ({
   wallpaperId: DEFAULT_WALLPAPER_ID,
   wallpaperDataUrl: null,
+  glassDataUrl: null,
   pattern: 'photo',
 
   setWallpaper: async (id) => {
     const source = getWallpaper(id);
     if (!source) return;
     set({ wallpaperId: id, pattern: 'photo' });
-    const dataUrl = await ditherUrlToDataUrl(source.url);
-    await warmImage(dataUrl);
+    const [dataUrl, glassDataUrl] = await Promise.all([
+      ditherUrlToDataUrl(source.url),
+      ditherUrlToDataUrl(source.url, { palette: GLASS_PALETTE }),
+    ]);
+    await Promise.all([warmImage(dataUrl), warmImage(glassDataUrl)]);
     // A later pick wins; do not clobber it with a slower earlier dither.
-    if (get().wallpaperId === id) set({ wallpaperDataUrl: dataUrl });
+    if (get().wallpaperId === id) set({ wallpaperDataUrl: dataUrl, glassDataUrl });
   },
 
   setPattern: (pattern) => set({ pattern }),

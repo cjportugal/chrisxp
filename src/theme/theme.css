@@ -1,5 +1,5 @@
 /* ChrisXP desktop theme: Mac System 1 chrome, Windows 3.1 accents, soft-club wallpaper.
-   Everything here is prefixed cx- so nothing leaks into Webamp (#webamp mounts at body level). */
+   Everything here is prefixed cx- so it stays clear of xp.css and the boot screens. */
 
 @font-face {
   font-family: 'ChicagoFLF';
@@ -106,8 +106,9 @@
   cursor: move;
 }
 
-/* System 1: six 1px pinstripes behind the title when the window is frontmost. */
-.cx-window[data-active='true'] .cx-titlebar {
+/* System 1: six 1px pinstripes behind the title when the window is frontmost. The Winamp column always has them. */
+.cx-window[data-active='true'] .cx-titlebar,
+.cx-player .cx-titlebar {
   background:
     repeating-linear-gradient(to bottom, var(--cx-ink) 0 1px, transparent 1px 2px) 0 4px / 100% 11px no-repeat,
     var(--cx-paper);
@@ -140,7 +141,8 @@
   gap: 3px;
 }
 
-.cx-window button.cx-titlebar__box {
+.cx-window button.cx-titlebar__box,
+.cx-player button.cx-titlebar__box {
   appearance: none;
   display: flex;
   align-items: center;
@@ -152,7 +154,8 @@
   cursor: default;
 }
 
-.cx-window button.cx-titlebar__box:active img {
+.cx-window button.cx-titlebar__box:active img,
+.cx-player button.cx-titlebar__box:active img {
   filter: invert(1) hue-rotate(180deg);
 }
 
@@ -176,32 +179,41 @@
   pointer-events: none;
 }
 
-/* 1-bit scrollbars, scoped to our windows so Webamp keeps its own. */
-.cx-window__body {
+/* 1-bit scrollbars, scoped to our windows and .cx-scroll panes so xp.css's own stay out. */
+.cx-window__body,
+.cx-scroll {
   scrollbar-width: thin;
   scrollbar-color: var(--cx-ink) var(--cx-paper);
 }
 
 .cx-window__body *::-webkit-scrollbar,
-.cx-window__body::-webkit-scrollbar {
+.cx-window__body::-webkit-scrollbar,
+.cx-scroll *::-webkit-scrollbar,
+.cx-scroll::-webkit-scrollbar {
   width: 14px;
   height: 14px;
 }
 
 .cx-window__body *::-webkit-scrollbar-track,
-.cx-window__body::-webkit-scrollbar-track {
+.cx-window__body::-webkit-scrollbar-track,
+.cx-scroll *::-webkit-scrollbar-track,
+.cx-scroll::-webkit-scrollbar-track {
   background: var(--cx-dither);
   border-left: 1px solid var(--cx-ink);
 }
 
 .cx-window__body *::-webkit-scrollbar-thumb,
-.cx-window__body::-webkit-scrollbar-thumb {
+.cx-window__body::-webkit-scrollbar-thumb,
+.cx-scroll *::-webkit-scrollbar-thumb,
+.cx-scroll::-webkit-scrollbar-thumb {
   background: var(--cx-paper);
   border: 1px solid var(--cx-ink);
 }
 
 .cx-window__body *::-webkit-scrollbar-corner,
-.cx-window__body::-webkit-scrollbar-corner {
+.cx-window__body::-webkit-scrollbar-corner,
+.cx-scroll *::-webkit-scrollbar-corner,
+.cx-scroll::-webkit-scrollbar-corner {
   background: var(--cx-paper);
 }
 
@@ -362,27 +374,72 @@
 
 .cx-dock {
   position: relative;
+  isolation: isolate;
   display: flex;
   align-items: flex-end;
   gap: 6px;
   margin-bottom: 6px;
-  padding: 6px 10px 14px;
+  padding: 0 10px 14px;
+  /* Painted over by the glass; this is what the boot reveal samples. */
   background: var(--cx-paper);
   border: 1px solid var(--cx-ink);
   box-shadow: var(--cx-shadow);
   pointer-events: auto;
 }
 
-/* Dither strip along the bottom edge of the tray. */
-.cx-dock::after {
+/* Fake glass. The tray is opaque, but it shows the wallpaper that sits behind it (re-dithered without
+   ink, pinned to the viewport so it lines up), frosted by a paper screen-door. Windows never show
+   through, which is the giveaway, and the point. */
+.cx-dock__glass {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  image-rendering: pixelated;
+}
+
+.cx-dock__glass[data-pattern='photo'] {
+  background: var(--cx-glass-image) center / cover fixed;
+}
+
+.cx-dock__glass[data-pattern='gray'] {
+  background: var(--cx-dither);
+  background-color: #808080;
+}
+
+.cx-dock__glass[data-pattern='flat'] {
+  background: var(--cx-blue);
+}
+
+.cx-dock__glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--cx-glass-frost) 0 0 / 8px 128px repeat-x;
+  image-rendering: pixelated;
+}
+
+/* The shelf the icons stand on: a dotted ink edge with a paper glint above it. */
+.cx-dock__glass::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
-  height: 6px;
-  border-top: 1px solid var(--cx-ink);
-  background: var(--cx-dither);
+  bottom: 20px;
+  height: 0;
+  border-top: 1px dotted var(--cx-ink);
+  box-shadow: 0 -1px 0 var(--cx-paper);
+}
+
+.cx-dock__hitzone {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  pointer-events: none;
+}
+
+.cx-dock__hitzone[data-active='true'] {
+  pointer-events: auto;
 }
 
 .cx-dock__item {
@@ -399,10 +456,10 @@
   position: relative;
   display: block;
   width: 48px;
-  height: 48px;
+  height: 36px;
 }
 
-/* The hovered icon jumps to 64px and overflows the slot upward; the tray itself never moves. */
+/* Icons stand taller than their slot, so they always poke over the tray; magnifying only adds to that. */
 .cx-dock__icon img {
   position: absolute;
   left: 50%;
@@ -414,7 +471,28 @@
   filter: invert(1) hue-rotate(180deg);
 }
 
+/* The icon flipped onto the shelf, cut to the bottom padding and faded with a dither mask. */
+.cx-dock__reflection {
+  position: absolute;
+  top: 37px;
+  left: 0;
+  right: 0;
+  height: 19px;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask: var(--cx-reflection-mask) 0 0 / 8px 24px repeat-x;
+  mask: var(--cx-reflection-mask) 0 0 / 8px 24px repeat-x;
+}
+
+.cx-dock__reflection img {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%) scaleY(-1);
+}
+
 .cx-dock__dot {
+  position: relative;
   width: 4px;
   height: 4px;
   margin-top: 3px;
@@ -429,7 +507,7 @@
 .cx-dock__tooltip {
   position: absolute;
   z-index: 1;
-  bottom: calc(100% + 8px);
+  bottom: calc(100% + 8px + var(--cx-dock-lift, 0px));
   left: 50%;
   transform: translateX(-50%);
   padding: 3px 6px 2px;
@@ -462,6 +540,334 @@
 
 .cx-trash__icon {
   display: block;
+}
+
+/* ---- Winamp ------------------------------------------------------------------------------- */
+
+/* Docked to the right edge from the menubar down, above windows; the menubar comes later in the DOM at the
+   same z-index, so its menus still drop over the column. */
+.cx-player {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: var(--cx-paper);
+  border-left: 1px solid var(--cx-ink);
+  box-shadow: -2px 0 0 var(--cx-ink);
+  outline: none;
+  animation: cx-player-in 180ms steps(6) both;
+}
+
+@keyframes cx-player-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-player { animation: none; }
+}
+
+.cx-player .cx-titlebar {
+  cursor: default;
+}
+
+/* Balances the close box so the title stays centered. */
+.cx-player__titlebar-spacer {
+  width: 15px;
+}
+
+.cx-player__body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 8px 0;
+}
+
+.cx-player__icon-button.cx-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 6px;
+}
+
+.cx-player__icon-button.cx-button:active img,
+.cx-player__icon-button.cx-button[aria-pressed='true'] img {
+  filter: invert(1);
+}
+
+.cx-player__icon-button.cx-button:disabled img {
+  opacity: 0;
+}
+
+/* Visualizer */
+
+.cx-player__vis {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cx-player__vis-frame {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  border: 1px solid var(--cx-ink);
+  background: var(--cx-dither);
+  box-shadow: var(--cx-shadow);
+}
+
+.cx-player__vis-canvas {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+}
+
+.cx-player__vis-canvas[data-ready='true'] {
+  visibility: visible;
+  cursor: pointer;
+}
+
+.cx-player__vis-frame .cx-player__spectrum {
+  position: relative;
+  border: 1px solid var(--cx-ink);
+}
+
+.cx-player__vis-idle {
+  position: relative;
+  padding: 3px 6px 2px;
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+}
+
+.cx-player__presets {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.cx-player__preset-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Now playing */
+
+.cx-player__now {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 6px;
+  border-top: 1px dotted var(--cx-ink);
+}
+
+.cx-player__readout {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.cx-player button.cx-player__time {
+  appearance: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--cx-ink);
+  font-size: 32px;
+  line-height: 0.8;
+  letter-spacing: 1px;
+  cursor: default;
+}
+
+/* Winamp blinks the clock while paused. */
+.cx-player__time[data-status='paused'] {
+  animation: cx-blink 1s steps(1) infinite;
+}
+
+@keyframes cx-blink {
+  50% { visibility: hidden; }
+}
+
+.cx-player__spectrum {
+  display: block;
+  margin-bottom: 2px;
+}
+
+.cx-player__title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  padding-top: 4px;
+}
+
+.cx-player__title-run {
+  display: inline-block;
+}
+
+.cx-player__title[data-marquee='true'] {
+  text-overflow: clip;
+}
+
+/* Two copies side by side; sliding one copy's width loops seamlessly, in Winamp's chunky steps. */
+.cx-player__title[data-marquee='true'] .cx-player__title-run {
+  animation: cx-marquee 12s steps(120) infinite;
+}
+
+@keyframes cx-marquee {
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cx-player__title[data-marquee='true'] { text-overflow: ellipsis; }
+  .cx-player__title[data-marquee='true'] .cx-player__title-run { animation: none; }
+}
+
+.cx-player__artist {
+  opacity: 0.6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Slider */
+
+.cx-player__slider {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 7px;
+  outline: none;
+  touch-action: none;
+}
+
+.cx-player__slider-track {
+  position: relative;
+  height: 0;
+  border-top: 1px solid var(--cx-ink);
+}
+
+.cx-player__slider-thumb {
+  position: absolute;
+  top: -6px;
+  width: 13px;
+  height: 9px;
+  margin-left: -7px;
+  background: var(--cx-paper);
+  border: 1px solid var(--cx-ink);
+  box-shadow: var(--cx-shadow);
+}
+
+.cx-player__slider:focus-visible .cx-player__slider-thumb {
+  background: var(--cx-dither);
+}
+
+.cx-player__slider[aria-disabled='true'] .cx-player__slider-track {
+  border-top-style: dotted;
+}
+
+.cx-player__slider[aria-disabled='true'] .cx-player__slider-thumb {
+  display: none;
+}
+
+/* Transport */
+
+.cx-player__transport {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cx-player__buttons {
+  display: flex;
+  justify-content: space-between;
+}
+
+.cx-player__buttons .cx-player__icon-button.cx-button {
+  width: 44px;
+}
+
+.cx-player__mix {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cx-player__speaker {
+  flex-shrink: 0;
+}
+
+/* Playlist */
+
+.cx-player__playlist {
+  flex: 1;
+  min-height: 72px;
+  display: flex;
+  flex-direction: column;
+  margin: 2px -8px 0;
+  border-top: 1px solid var(--cx-ink);
+}
+
+.cx-player__tracks {
+  /* The offsetParent of its rows, so the playlist can scroll a row into view by offsetTop. */
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 2px 0;
+  list-style: none;
+  overflow-y: auto;
+  outline: none;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.cx-player__track {
+  display: flex;
+  gap: 8px;
+  padding: 3px 8px 2px;
+  cursor: default;
+}
+
+.cx-player__track-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cx-player__track[aria-selected='true'] {
+  outline: 1px dotted var(--cx-ink);
+  outline-offset: -1px;
+}
+
+.cx-player__track[data-current='true'] {
+  background: var(--cx-ink);
+  color: var(--cx-paper);
+}
+
+.cx-player__track[data-current='true'][aria-selected='true'] {
+  outline-color: var(--cx-paper);
+}
+
+.cx-player__playlist-footer {
+  padding: 4px 8px 3px;
+  font-size: 12px;
+  line-height: 1;
+  border-top: 1px solid var(--cx-ink);
 }
 
 /* ---- About ChrisXP ------------------------------------------------------------------------ */
