@@ -634,6 +634,61 @@
   cursor: pointer;
 }
 
+/* While Milkdrop fills the desktop the frame hides; the preset row stays. */
+.cx-player__vis[data-on-desktop='true'] .cx-player__vis-frame {
+  display: none;
+}
+
+/* ...and the column becomes a paper screen-door the visuals show through. Every readout and control keeps a
+   solid paper box of its own, hugging its contents, so it stays legible over whatever is behind. */
+.cx-player[data-see-through='true'] {
+  /* 2px cells, the grain of --cx-dither: fine enough to read as dither, coarse enough not to blend into a tint. */
+  background: repeating-conic-gradient(var(--cx-paper) 0 25%, transparent 0 50%) 0 0 / 4px 4px;
+}
+
+.cx-player[data-see-through='true'] :is(
+    button.cx-player__time,
+    .cx-player__title-run,
+    .cx-player__artist,
+    .cx-player__preset-name,
+    .cx-player__slider,
+    .cx-player__speaker,
+    .cx-player__track-name,
+    .cx-player__track-time,
+    .cx-player__playlist-footer
+  ) {
+  background: var(--cx-paper);
+}
+
+.cx-player[data-see-through='true'] :is(.cx-player__artist, .cx-player__preset-name, .cx-player__track-name) {
+  flex: 0 1 auto;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.cx-player[data-see-through='true'] .cx-player__preset-name {
+  margin: 0 auto;
+  padding: 2px 3px 1px;
+}
+
+.cx-player[data-see-through='true'] .cx-player__track-time {
+  margin-left: auto;
+}
+
+.cx-player[data-see-through='true'] .cx-player__track[data-current='true'] :is(.cx-player__track-name, .cx-player__track-time) {
+  background: none;
+}
+
+/* Milkdrop spread over the desktop: above the wallpaper, below everything in the foreground. */
+.cx-desktop-vis {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
 .cx-player__vis-frame .cx-player__spectrum {
   position: relative;
   border: 1px solid var(--cx-ink);

@@ -86,7 +86,7 @@ const SYSTEM_ROWS: BootRow[] = [
     key: 'winamp',
     start: 3775,
     resolve: 3960,
-    label: '  Detecting Winamp Module',
+    label: '  Detecting ChrisAMP Module',
     result: 'OK',
   },
   {

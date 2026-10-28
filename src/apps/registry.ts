@@ -50,7 +50,7 @@ export const appDefinitions: Record<AppType, AppDefinition> = {
   },
   winamp: {
     id: 'winamp',
-    title: 'Winamp',
+    title: 'ChrisAMP',
     defaultWidth: 275,
     defaultHeight: 500,
     Component: NoWindow,

@@ -22,6 +22,8 @@ interface PlayerStore {
   presetName: string;
   /** Registered by the visualizer while it is mounted, so the menubar can step presets. */
   presetStepper: ((delta: number) => void) | null;
+  /** Milkdrop is spread over the desktop instead of sitting in its frame. */
+  visOnDesktop: boolean;
 
   attachEngine: (create: (events: EngineEvents) => PlayerEngine) => void;
   detachEngine: () => void;
@@ -39,6 +41,7 @@ interface PlayerStore {
   setDurations: (durations: number[]) => void;
   setPresetName: (name: string) => void;
   setPresetStepper: (stepper: ((delta: number) => void) | null) => void;
+  setVisOnDesktop: (onDesktop: boolean) => void;
   nextPreset: () => void;
 }
 
@@ -97,6 +100,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => {
     graph: null,
     presetName: '',
     presetStepper: null,
+    visOnDesktop: false,
 
     attachEngine: (createEngine) => {
       engine?.dispose();
@@ -172,6 +176,7 @@ export const usePlayerStore = create<PlayerStore>((set, get) => {
     setDurations: (durations) => set({ durations }),
     setPresetName: (presetName) => set({ presetName }),
     setPresetStepper: (presetStepper) => set({ presetStepper }),
+    setVisOnDesktop: (visOnDesktop) => set({ visOnDesktop }),
     nextPreset: () => get().presetStepper?.(1),
   };
 });

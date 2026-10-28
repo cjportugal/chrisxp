@@ -8,19 +8,23 @@ interface ButterchurnVisualizer {
   connectAudio: (node: AudioNode) => void;
   loadPreset: (preset: object, blendSeconds: number) => void;
   render: () => void;
+  setRendererSize: (width: number, height: number) => void;
 }
 
 export interface MilkdropDither {
   /** Preset names, sorted. */
   presets: string[];
   loadPreset: (name: string, blendSeconds: number) => void;
+  /** Point the output at another canvas, rendering `columns` x `rows` Milkdrop pixels. */
+  retarget: (target: HTMLCanvasElement, columns: number, rows: number) => void;
   /** Render one Milkdrop frame and dither it onto the target canvas. */
   render: () => void;
   dispose: () => void;
 }
 
 /** Milkdrop (butterchurn) on an offscreen WebGL canvas, read back each frame and Bayer-dithered to the
- * OS palette on `target`, which is `size / VIS_PIXEL` pixels square and CSS-scaled up pixelated.
+ * OS palette on `target`, which is `size / VIS_PIXEL` pixels square and CSS-scaled up pixelated. `retarget`
+ * moves the output to another canvas at another size, such as the desktop.
  * Resolves to null when the browser has no WebGL2.
  */
 export async function createMilkdropDither(
@@ -37,41 +41,54 @@ export async function createMilkdropDither(
 
   const side = Math.round(size / VIS_PIXEL);
   const glCanvas = document.createElement('canvas');
-  glCanvas.width = side;
-  glCanvas.height = side;
   const scratch = document.createElement('canvas');
-  scratch.width = side;
-  scratch.height = side;
   const scratchContext = scratch.getContext('2d', { willReadFrequently: true });
-  target.width = side;
-  target.height = side;
-  const targetContext = target.getContext('2d');
-  if (!scratchContext || !targetContext) return null;
+  if (!scratchContext) return null;
+  let width = 0;
+  let height = 0;
+  let targetContext: CanvasRenderingContext2D | null = null;
+  let output: ImageData | null = null;
+  let visualizer: ButterchurnVisualizer | null = null;
 
-  const visualizer = butterchurn.createVisualizer(graph.context, glCanvas, {
+  const retarget = (target: HTMLCanvasElement, columns: number, rows: number) => {
+    targetContext = target.getContext('2d');
+    width = columns;
+    height = rows;
+    for (const canvas of [glCanvas, scratch, target]) {
+      canvas.width = columns;
+      canvas.height = rows;
+    }
+    output = new ImageData(columns, rows);
+    visualizer?.setRendererSize(columns, rows);
+  };
+  retarget(target, side, side);
+  if (!targetContext) return null;
+
+  const vis = butterchurn.createVisualizer(graph.context, glCanvas, {
     width: side,
     height: side,
     pixelRatio: 1,
     textureRatio: 1,
   }) as ButterchurnVisualizer;
-  visualizer.connectAudio(graph.source);
+  vis.connectAudio(graph.source);
+  visualizer = vis;
 
   const presetObjects = presetPack.getPresets() as Record<string, object>;
   const presets = Object.keys(presetObjects).sort((a, b) => a.localeCompare(b));
-  const output = new ImageData(side, side);
-
   return {
     presets,
     loadPreset: (name, blendSeconds) => {
       const preset = presetObjects[name];
-      if (preset) visualizer.loadPreset(preset, blendSeconds);
+      if (preset) vis.loadPreset(preset, blendSeconds);
     },
+    retarget,
     render: () => {
-      visualizer.render();
+      if (!targetContext || !output) return;
+      vis.render();
       // Read back in the same task as the render, before the WebGL buffer is presented and cleared.
       scratchContext.drawImage(glCanvas, 0, 0);
-      const { data } = scratchContext.getImageData(0, 0, side, side);
-      output.data.set(ditherImageData(data, side, side, VIS_PALETTE, { matrix: 'bayer4' }));
+      const { data } = scratchContext.getImageData(0, 0, width, height);
+      output.data.set(ditherImageData(data, width, height, VIS_PALETTE, { matrix: 'bayer4' }));
       targetContext.putImageData(output, 0, 0);
     },
     dispose: () => {

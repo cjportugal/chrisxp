@@ -123,7 +123,7 @@ export default function MenuBar() {
     },
     {
       id: 'winamp',
-      label: 'Winamp',
+      label: 'ChrisAMP',
       items: [
         { label: playing ? 'Pause' : 'Play', disabled: !winampOpen, action: () => void player.togglePlay() },
         { label: 'Stop', disabled: !winampOpen, action: player.stop },
@@ -132,7 +132,7 @@ export default function MenuBar() {
         'separator',
         { label: 'Next Preset', disabled: !canStepPreset, action: player.nextPreset },
         'separator',
-        { label: 'Show Winamp', checked: winampOpen, action: toggleWinamp },
+        { label: 'Show ChrisAMP', checked: winampOpen, action: toggleWinamp },
       ],
     },
     {

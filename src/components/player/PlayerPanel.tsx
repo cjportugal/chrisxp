@@ -16,11 +16,13 @@ import Visualizer from './Visualizer';
 
 const VOLUME_STEP = 0.05;
 
-/** Winamp, as a ChrisXP column docked to the right edge. Owns the audio engine for as long as it is open. */
+/** Winamp, as a ChrisXP column docked to the right edge. Owns the audio engine for as long as it is open.
+ * While Milkdrop fills the desktop the column turns to a paper screen-door, so the visuals show through it. */
 export default function PlayerPanel() {
   const closeWinamp = useWindowStore((state) => state.closeWinamp);
   const attachEngine = usePlayerStore((state) => state.attachEngine);
   const detachEngine = usePlayerStore((state) => state.detachEngine);
+  const visOnDesktop = usePlayerStore((state) => state.visOnDesktop);
 
   useEffect(() => {
     attachEngine((events) => new AudioEngine(events));
@@ -47,17 +49,18 @@ export default function PlayerPanel() {
   return (
     <aside
       className="cx-player cx-ui"
-      aria-label="Winamp"
+      aria-label="ChrisAMP"
+      data-see-through={visOnDesktop ? 'true' : undefined}
       tabIndex={-1}
       style={{ top: MENUBAR_HEIGHT, width: PLAYER_WIDTH }}
       onKeyDown={onKeyDown}
     >
       <div className="cx-titlebar">
-        <button type="button" className="cx-titlebar__box cx-titlebar__box--close" aria-label="Close Winamp" onClick={closeWinamp}>
+        <button type="button" className="cx-titlebar__box cx-titlebar__box--close" aria-label="Close ChrisAMP" onClick={closeWinamp}>
           <PixelIcon glyph={GLYPHS.closeBox} />
         </button>
         <span className="cx-titlebar__center">
-          <span className="cx-titlebar__title">Winamp</span>
+          <span className="cx-titlebar__title">ChrisAMP</span>
         </span>
         <span className="cx-player__titlebar-spacer" />
       </div>
