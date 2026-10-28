@@ -1,19 +1,8 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
-import { TextSwitchTransition, type BootStripArea } from '../effects/TextSwitchTransition';
+import { TextSwitchTransition } from '../effects/TextSwitchTransition';
 import { snapshotTextScreen } from '../effects/snapshotTextScreen';
 
 const TRANSITION_DURATION = 4800;
-
-/** Where the loader bar sits on the startup screen, as fractions of the snapshot. */
-const measureLoader = (screen: HTMLElement): BootStripArea | null => {
-  const loader = screen.querySelector('.nfo-loader')?.getBoundingClientRect();
-  const bounds = screen.getBoundingClientRect();
-  if (!loader?.width || !bounds.width) return null;
-  return {
-    x: (loader.left - bounds.left) / bounds.width, y: (loader.top - bounds.top) / bounds.height,
-    width: loader.width / bounds.width, height: loader.height / bounds.height,
-  };
-};
 
 export default function AsciiBootTransition({ onComplete }: { onComplete: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -53,7 +42,7 @@ export default function AsciiBootTransition({ onComplete }: { onComplete: () => 
         if (preference.matches || !bios || !readme) { finish(); return; }
         renderer = new TextSwitchTransition(canvas, bios, snapshotTextScreen(readme), {
           duration: TRANSITION_DURATION, color: true, refreshRate: 10, sizeMode: 'preserve',
-          separateBootStrip: true, bootStrip: measureLoader(readme),
+          separateBootStrip: true, bootStrip: null,
         });
         renderer.draw(0);
         bios.style.visibility = 'hidden';
@@ -77,7 +66,6 @@ export default function AsciiBootTransition({ onComplete }: { onComplete: () => 
     const onResize = () => {
       if (finished || !renderer || !readme) return;
       try {
-        renderer.options.bootStrip = measureLoader(readme);
         renderer.setTarget(snapshotTextScreen(readme));
       } catch { finish(); }
     };

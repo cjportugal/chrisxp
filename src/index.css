@@ -446,79 +446,46 @@ body {
   outline-offset: 3px;
 }
 
-.nfo-loader {
-  height: 24px;
-  overflow: hidden;
-  border-top: 1px solid #555;
-  background: #000;
-}
-
-.nfo-loader__cells {
-  display: flex;
-  width: 100%;
-  min-width: max-content;
-  height: 100%;
-  font-size: 24px;
-  line-height: 1;
-  user-select: none;
-}
-
-.nfo-loader__cells span {
-  flex: 1 0 0.5em;
-}
-
-/* Splash variant: the ChrisXP block-character art, with the text-mode loader along the bottom of the screen. */
+/* Splash variant: the startup title card, filling the screen. */
 .nfo-screen--splash {
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr);
 }
 
-.nfo-splash {
-  display: grid;
-  place-items: center;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.nfo-splash__frame {
-  position: relative;
-  display: grid;
-  width: max-content;
-  line-height: 1;
-}
-
-.nfo-splash__art {
-  margin: 0;
-  padding: 0;
-  background: none;
-  color: #aaa;
-  font: inherit;
-  line-height: 1;
-  white-space: pre;
-  font-variant-ligatures: none;
-  user-select: none;
-}
-
-/* Off the 16px pixel grid, a one-dot echo closes the hairline seams between block characters. */
-.nfo-splash__frame--patched :is(.nfo-splash__art, .nfo-splash__cursor) {
-  text-shadow: 0.0625em 0 currentColor;
-}
-
-.nfo-splash__cursor {
+/* A dotted triangle tumbling behind the art, after the Crystal intro's dotted vectors. The fixed screen is its
+   stacking context, so z-index -1 paints it over the screen's black but under the title. */
+.nfo-crystal {
   position: absolute;
-  margin: 0;
-  padding: 0;
-  background: none;
-  color: #aaa;
-  font: inherit;
-  line-height: 1;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 600ms steps(4);
 }
 
-.nfo-screen--splash .nfo-loader {
-  height: 33px;
+.nfo-crystal[data-visible='true'] {
+  opacity: 1;
 }
 
-.nfo-screen--splash .nfo-loader__cells {
-  font-size: 32px;
+/* The title card: dithered pixel art on the same low-res grid as the triangle (see titleCard.ts), in front of it. */
+.nfo-title {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+
+.nfo-title__a11y {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 @media (min-width: 1600px) {

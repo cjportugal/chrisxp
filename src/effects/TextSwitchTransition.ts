@@ -88,9 +88,10 @@ export class TextSwitchTransition {
     this.width = 0;
   }
 
-  /** The loader's box in canvas pixels; defaults to a full-width strip along the bottom edge. */
+  /** The loader's box in canvas pixels, or null when the target screen has no loader. */
   private get strip() {
-    const r = this.rect, area = this.options.bootStrip ?? { x: 0, y: .969, width: 1, height: .031 };
+    const r = this.rect, area = this.options.bootStrip;
+    if (!area) return null;
     return { x: r.x + area.x * r.width, y: r.y + area.y * r.height, width: area.width * r.width, height: area.height * r.height };
   }
 
@@ -191,8 +192,8 @@ export class TextSwitchTransition {
       - (gridMetrics.fontBoundingBoxDescent ?? this.fontSize * .2)) / 2;
     const r = this.rect;
     ctx.save();
-    if (this.options.separateBootStrip) {
-      const s = this.strip;
+    const s = this.options.separateBootStrip ? this.strip : null;
+    if (s) {
       ctx.beginPath(); ctx.rect(r.x, r.y, r.width, r.height); ctx.rect(s.x, s.y, s.width, s.height); ctx.clip('evenodd');
     }
     for (let i = 0; i < this.cells.length; i++) {
@@ -229,14 +230,14 @@ export class TextSwitchTransition {
     }
     if (p >= 1) ctx.drawImage(this.target, r.x, r.y, r.width, r.height);
     ctx.restore();
-    if (this.options.separateBootStrip && overall >= .25) {
-      this.drawBootStrip(clamp((overall - .25) / .75));
+    if (s && overall >= .25) {
+      this.drawBootStrip(s, clamp((overall - .25) / .75));
     }
   }
 
-  private drawBootStrip(progress: number) {
+  private drawBootStrip(strip: { x: number; y: number; width: number; height: number }, progress: number) {
     const ctx = this.ctx, r = this.rect;
-    const { x: left, y, width: span, height } = this.strip;
+    const { x: left, y, width: span, height } = strip;
     const columns = Math.ceil(span / this.cellWidth);
     const ramp = '░▒▓█▓▒';
     const colors = BOOT_LOADER_PALETTE;

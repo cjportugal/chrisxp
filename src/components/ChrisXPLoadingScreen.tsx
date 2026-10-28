@@ -1,32 +1,22 @@
-import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
-import { CHRIS95_COLS, CHRIS95_LETTERS, CHRIS95_LETTER_SPANS, CHRIS95_ROWS, chris95Typed } from '../effects/chris95Art';
-import { BOOT_LOADER_PALETTE } from '../effects/TextSwitchTransition';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import chrisxpWord from '../assets/title/chrisxp.svg';
+import loadingWord from '../assets/title/loading.svg';
+import operatingWord from '../assets/title/operating.svg';
+import pausedWord from '../assets/title/paused.svg';
+import systemWord from '../assets/title/system.svg';
+import { splashGrid } from '../effects/splashGrid';
+import { drawTitleCard } from '../effects/titleCard';
+import type { TitleCardWords } from '../effects/titleCard';
+import CrystalTriangle from './CrystalTriangle';
 
 const LOAD_DURATION = 6400;
-const LOADER_GLYPHS = '░▒▓█▓▒';
-// The loader advances in coarse jumps, a few frames a second, at the same overall speed.
-const LOADER_STEP_MS = 300, LOADER_STEP_CELLS = 3;
-// Terminal-style typing: the cursor blinks, the letters type in one at a time, then it blinks after the last.
-const TYPE_START = 900, LETTER_MS = 200, BLINK_MS = 500;
-/** Block cursors sized to the letters they follow, in grid cells: "Chris" x-height, then the smaller, lower "xp". */
-const CURSORS = [{ top: 24, rows: 14, cols: 8 }, { top: 31, rows: 7, cols: 5 }]
-  .map(cursor => ({ ...cursor, text: Array(cursor.rows).fill('█'.repeat(cursor.cols)).join('\n') }));
-const CURSOR_GAP = 2;
+/** The bar's filled cells shimmer through the loader greys, a cell a step, a few steps a second. */
+const SHIMMER_STEP_MS = 300;
 
-/** The art spans at most this share of the screen's width and height. */
-const ART_WIDTH = .6, ART_HEIGHT = .7;
-
-/** Sizes the art in whole device pixels. The VGA font only meets edge to edge at multiples of 16, so `patched`
- * marks the in-between sizes that need the seams between blocks filled. */
-function splashFontSize(width: number, height: number) {
-  const dpr = Math.min(window.devicePixelRatio || 1, 3);
-  // The cursor parks just past the art's right edge, so keep room for it too.
-  const cols = Math.max(CHRIS95_COLS / ART_WIDTH, CHRIS95_COLS + 2 * (CURSORS[1].cols + CURSOR_GAP));
-  const size = Math.min(width / (cols * 9 / 16), height * ART_HEIGHT / CHRIS95_ROWS);
-  let device = Math.max(1, Math.floor(size * dpr));
-  // Prefer a seamless size when one is close below.
-  if (device >= 16 && device % 16 <= device * .1) device -= device % 16;
-  return { size: device / dpr, patched: device % 16 !== 0 };
+function loadWord(src: string): HTMLImageElement {
+  const image = new Image();
+  image.src = src;
+  return image;
 }
 
 interface ChrisXPLoadingScreenProps {
@@ -34,34 +24,27 @@ interface ChrisXPLoadingScreenProps {
   onComplete: () => void;
 }
 
+/** The startup title card, set like an Evangelion episode card and drawn as dithered pixel art (see titleCard),
+ * over the tumbling dotted triangle. Enter skips it, Space pauses it. The title words are outlines of the NIS JTC
+ * M9 fonts (see scripts/outline-title.py); the real text stays in the DOM for screen readers. */
 export default function ChrisXPLoadingScreen({ active = true, onComplete }: ChrisXPLoadingScreenProps) {
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(() =>
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
   );
   const [elapsed, setElapsed] = useState(0);
-  const [font, setFont] = useState({ size: 16, patched: false });
-  const splashRef = useRef<HTMLDivElement>(null);
   const elapsedRef = useRef(0);
+  const cardRef = useRef<HTMLCanvasElement>(null);
+  const [words] = useState<TitleCardWords>(() => ({
+    chrisxp: loadWord(chrisxpWord),
+    operating: loadWord(operatingWord),
+    system: loadWord(systemWord),
+    loading: loadWord(loadingWord),
+    paused: loadWord(pausedWord),
+  }));
+  const [grid, setGrid] = useState({ width: 0, height: 0 });
   const finishedRef = useRef(false);
   const onFinished = useEffectEvent(onComplete);
-
-  useLayoutEffect(() => {
-    const splash = splashRef.current;
-    if (!splash) return;
-    const measure = () => {
-      const next = splashFontSize(splash.clientWidth, splash.clientHeight);
-      setFont(current => current.size === next.size ? current : next);
-    };
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(splash);
-    window.addEventListener('resize', measure);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', measure);
-    };
-  }, []);
 
   const finish = useEffectEvent(() => {
     if (finishedRef.current) return;
@@ -106,35 +89,43 @@ export default function ChrisXPLoadingScreen({ active = true, onComplete }: Chri
     return () => window.clearInterval(timer);
   }, [active, paused]);
 
-  const phase = reducedMotion ? 0 : Math.floor(elapsed / 100);
-  const loaderShift = reducedMotion ? 0 : Math.floor(elapsed / LOADER_STEP_MS) * LOADER_STEP_CELLS;
-  const progress = Math.min(100, Math.floor(elapsed / LOAD_DURATION * 100));
-  const letters = reducedMotion ? CHRIS95_LETTERS
-    : elapsed < TYPE_START ? 0 : Math.min(CHRIS95_LETTERS, Math.floor((elapsed - TYPE_START) / LETTER_MS) + 1);
-  const typing = !reducedMotion && letters > 0 && letters < CHRIS95_LETTERS;
-  const cursorOn = reducedMotion || typing || Math.floor(elapsed / BLINK_MS) % 2 === 0;
-  const cursor = CURSORS[letters >= 6 ? 1 : 0];
-  const cursorX = letters ? CHRIS95_LETTER_SPANS[letters].right + CURSOR_GAP : CHRIS95_LETTER_SPANS[1].left;
+  useEffect(() => {
+    const canvas = cardRef.current;
+    if (!canvas) return;
+    const fit = () => {
+      if (canvas.clientWidth && canvas.clientHeight) setGrid(splashGrid(canvas.clientWidth, canvas.clientHeight));
+    };
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(canvas);
+    // Redraw once the outlined words have loaded.
+    const onLoad = () => setGrid((current) => ({ ...current }));
+    const images = Object.values(words);
+    images.forEach((image) => image.addEventListener('load', onLoad));
+    return () => {
+      observer.disconnect();
+      images.forEach((image) => image.removeEventListener('load', onLoad));
+    };
+  }, [words]);
+
+  const progress = elapsed / LOAD_DURATION;
+  const shimmer = reducedMotion ? 0 : Math.floor(elapsed / SHIMMER_STEP_MS);
+
+  useEffect(() => {
+    const canvas = cardRef.current;
+    const ctx = canvas?.getContext('2d', { willReadFrequently: true });
+    if (!canvas || !ctx || !grid.width) return;
+    if (canvas.width !== grid.width || canvas.height !== grid.height) Object.assign(canvas, grid);
+    drawTitleCard(ctx, grid.width, grid.height, words, { progress, shimmer, paused });
+  }, [grid, words, progress, shimmer, paused]);
 
   return (
     <main className="nfo-screen nfo-screen--splash" aria-label="Chris XP startup">
-      <div ref={splashRef} className="nfo-splash">
-        <div className={`nfo-splash__frame${font.patched ? ' nfo-splash__frame--patched' : ''}`} style={{ fontSize: `${font.size}px` }}>
-          <pre className="nfo-splash__art" role="img" aria-label="Chris XP">{chris95Typed(letters, reducedMotion ? undefined : phase).join('\n')}</pre>
-          <pre className="nfo-splash__cursor" aria-hidden="true"
-            style={{ left: `${cursorX * 9 / 16}em`, top: `${cursor.top}em`, visibility: cursorOn ? 'visible' : 'hidden' }}>
-            {cursor.text}
-          </pre>
-        </div>
-      </div>
-      <div className="nfo-loader" role="progressbar" aria-label={paused ? 'Loading paused' : 'Starting Chris XP'} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}>
-        <div className="nfo-loader__cells" aria-hidden="true">
-          {Array.from({ length: 256 }, (_, column) => {
-            const position = ((column - loaderShift) % 48 + 48) % 48;
-            return <span key={column} style={{ color: BOOT_LOADER_PALETTE[Math.floor(position / 6)] }}>{LOADER_GLYPHS[position % 6]}</span>;
-          })}
-        </div>
-      </div>
+      <CrystalTriangle running={active && !paused} visible={active} />
+      <canvas ref={cardRef} className="nfo-title" aria-hidden="true" />
+      <h1 className="nfo-title__a11y">ChrisXP Operating System</h1>
+      <div className="nfo-title__a11y" role="progressbar" aria-label={paused ? 'Loading paused' : 'Starting Chris XP'}
+        aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.floor(progress * 100)} />
     </main>
   );
 }

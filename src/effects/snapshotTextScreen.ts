@@ -1,6 +1,6 @@
 /** Capture the flat text-mode screen for its ASCII transitions.
  * Character ranges retain preformatted art, wrapping, letter spacing, and scroll clipping.
- * This deliberately supports the screen's solid fills, square borders, and plain images, not general CSS.
+ * This deliberately supports the screen's solid fills, square borders, plain images and canvases, not general CSS.
  */
 export function snapshotTextScreen(root: HTMLElement): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
@@ -18,7 +18,7 @@ export function snapshotTextScreen(root: HTMLElement): HTMLCanvasElement {
   const paint = (element: HTMLElement) => {
     const style = getComputedStyle(element);
     const box = element.getBoundingClientRect();
-    if (style.display === 'none' || style.visibility === 'hidden' || !box.width || !box.height) return;
+    if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0' || !box.width || !box.height) return;
     ctx.save();
     ctx.fillStyle = style.backgroundColor;
     ctx.fillRect(box.left, box.top, box.width, box.height);
@@ -47,6 +47,14 @@ export function snapshotTextScreen(root: HTMLElement): HTMLCanvasElement {
 
     if (element instanceof HTMLImageElement) {
       if (element.complete && element.naturalWidth) ctx.drawImage(element, box.left, box.top, box.width, box.height);
+      ctx.restore();
+      return;
+    }
+
+    // Canvases are low-res pixel art scaled up, so keep their pixels hard.
+    if (element instanceof HTMLCanvasElement) {
+      ctx.imageSmoothingEnabled = style.imageRendering !== 'pixelated';
+      if (element.width && element.height) ctx.drawImage(element, box.left, box.top, box.width, box.height);
       ctx.restore();
       return;
     }
